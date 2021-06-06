@@ -27,6 +27,6 @@ OCSP requests and responses take the form of DER encoded stream of [ASN.1](http:
 
 Make the URL used by a site for OCSP queries load the file ./src/OCSPServer.php.  The code in this file uses an OpenSSL file based CA in folder call 'certification/ca' but it can be changed.
 
-Certificates you generate should include the address of your OCSP query endpoint, as a URL, in the Authority Information Access (AIA) X509 certificate extension.  The CA created by the example code in the wiki does this.  The OCSP URL in the AIA extension is used by client to discover the address to which any OCSP request should be sent.
+Certificates you generate should include the address of your OCSP query endpoint, as a URL, in the Authority Information Access (AIA) X509 certificate extension.  The CA created by the [example code in the wiki](https://github.com/bseddon/ocsp-responder/wiki) does this.  The OCSP URL in the AIA extension is used by client to discover the address to which any OCSP request should be sent.
 
 Follow the instructions in the wiki pages to use OpenSSL create a CA, generate 'foo', 'bar' and 'xxx' certificates then revoke the 'xxx' certificate.  Creating a CA using OpenSSL makes it easy to test and verify your setup.
