@@ -116,7 +116,7 @@ class StoreFS extends Store
 		// Find the certificate
 		if ( ! isset( $certificates[ base64_encode( $cid['issuerKeyHash'] ) ] ) )
 		{
-			throw new Exception( "Issuer certificate not found", ERR_UNAUTHORIZED );
+			throw new Exception( "Issuer certificate not found", \Ocsp\Ocsp::ERR_UNAUTHORIZED );
 		}
 
 		/** 
@@ -129,7 +129,7 @@ class StoreFS extends Store
 		// $requestInfo = $info->extractRequestInfo( $caSequence, $caSequence );
 		if ( ! $publicKeyBytes = $requestInfo->getIssuerPublicKeyBytes() ?? null )
 		{
-			throw new Exception( "Unable to find the public key in the responder certificate", ERR_UNAUTHORIZED );
+			throw new Exception( "Unable to find the public key in the responder certificate", \Ocsp\Ocsp::ERR_UNAUTHORIZED );
 		}
 
 		// Access the serial number
@@ -139,7 +139,7 @@ class StoreFS extends Store
 
 		if ( ! file_exists( $filename ) )
 		{
-			throw new Exception( "Response not found", ERR_UNAUTHORIZED );
+			throw new Exception( "Response not found", \Ocsp\Ocsp::ERR_UNAUTHORIZED );
 		}
 
 		$certInfo = json_decode( file_get_contents( $filename ), true );
@@ -155,7 +155,7 @@ class StoreFS extends Store
 		switch( $certInfo['status'] )
 		{
 			case 'E': // expired
-				throw new \Exception( "Certificate revoked", ERR_UNAUTHORIZED );
+				throw new \Exception( "Certificate revoked", \Ocsp\Ocsp::ERR_UNAUTHORIZED );
 			case 'R': // revoked
 				$status = 1;
 				list( $date, $reason ) = explode( ',', $certInfo['revokedDate'] );

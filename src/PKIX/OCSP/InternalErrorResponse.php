@@ -9,5 +9,5 @@ namespace PKIX\OCSP;
  */
 class InternalErrorResponse extends ExceptionResponse
 {
-	protected $OCSPStatus = \Ocsp\ERR_INTERNAL_ERROR;
+	protected $OCSPStatus = \Ocsp\Ocsp::ERR_INTERNAL_ERROR;
 }

@@ -10,7 +10,7 @@ namespace PKIX\OCSP;
  */
 class ExceptionResponse extends Response
 {
-	protected $OCSPStatus = \Ocsp\ERR_SUCCESS;
+	protected $OCSPStatus = \Ocsp\Ocsp::ERR_SUCCESS;
 	protected $HTTPStatus = self::HTTP_OK;
 
 	/**
@@ -53,15 +53,15 @@ class ExceptionResponse extends Response
 	{
 		switch ($errcode)
 		{
-			case \Ocsp\ERR_MALFORMED_ASN1:
+			case \Ocsp\Ocsp::ERR_MALFORMED_ASN1:
 				return new MalformedRequestResponse();
-			case \Ocsp\ERR_INTERNAL_ERROR:
+			case \Ocsp\Ocsp::ERR_INTERNAL_ERROR:
 				return new InternalErrorResponse();
-			case \Ocsp\ERR_TRY_LATER:
+			case \Ocsp\Ocsp::ERR_TRY_LATER:
 				return new TryLaterResponse();
-			case \Ocsp\ERR_SIG_REQUIRED:
+			case \Ocsp\Ocsp::ERR_SIG_REQUIRED:
 				return new SigRequiredResponse();
-			case \Ocsp\ERR_UNAUTHORIZED:
+			case \Ocsp\Ocsp::ERR_UNAUTHORIZED:
 				return new UnauthorizedResponse();
 
 			default:

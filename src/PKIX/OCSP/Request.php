@@ -48,7 +48,7 @@ class Request extends \PKIX\Message
 			$version = $tbsRequest->getFirstChildOfType( UniversalTagID::INTEGER, Element::CLASS_CONTEXTSPECIFIC );
 			if ($version != null && $version->getValue() != 0 ) 
 			{
-				throw new RequestException("Unsupported OCSPRequest message version", \Ocsp\ERR_UNSUPPORTED_VERSION);
+				throw new RequestException("Unsupported OCSPRequest message version", \Ocsp\Ocsp::ERR_UNSUPPORTED_VERSION);
 			}
 
 			/* skipped: requestorName */
@@ -70,7 +70,7 @@ class Request extends \PKIX\Message
 					$critical = \Ocsp\Asn1\asBoolean( $extension->getFirstChildOfType( UniversalTagID::BOOLEAN ) );
 					if ( $critical && $critical->getValue() )
 					{
-						throw new RequestException ("Unsupported critical extension $extoid", ERR_UNSUPPORTED_EXT);
+						throw new RequestException ("Unsupported critical extension $extoid", \Ocsp\Ocsp::ERR_UNSUPPORTED_EXT);
 					}
 				}
 			}
@@ -80,11 +80,11 @@ class Request extends \PKIX\Message
 			$reqCnt = count( $requestList->getElements() );
 			if ($reqCnt == 0)
 			{
-				throw new RequestException ("No certificate status requested", ERR_REQLIST_EMPTY );
+				throw new RequestException ("No certificate status requested", \Ocsp\Ocsp::ERR_REQLIST_EMPTY );
 			}
 			if ($reqCnt > 1)
 			{
-				throw new RequestException ("Multiple certificate status requested", ERR_REQLIST_MULTI );
+				throw new RequestException ("Multiple certificate status requested", \Ocsp\Ocsp::ERR_REQLIST_MULTI );
 			}
 
 			$request = $requestList->first()->asSequence();
@@ -101,7 +101,7 @@ class Request extends \PKIX\Message
 					$critical = \Ocsp\Asn1\asBoolean( $extension->getFirstChildOfType( UniversalTagID::BOOLEAN ) );
 					if ( $critical && $critical->getValue() )
 					{
-						throw new RequestException( "Unsupported critical extension $extoid", ERR_UNSUPPORTED_EXT );
+						throw new RequestException( "Unsupported critical extension $extoid", \Ocsp\Ocsp::ERR_UNSUPPORTED_EXT );
 					}
 				}
 			}
@@ -110,11 +110,11 @@ class Request extends \PKIX\Message
 		}
 		catch (\Ocsp\Exception\Asn1DecodingException $e) 
 		{
-			throw new RequestException ("Malformed request", ERR_MALFORMED_ASN1 );
+			throw new RequestException ("Malformed request", \Ocsp\Ocsp::ERR_MALFORMED_ASN1 );
 		} 
 		catch (\Ocsp\Exception\InvalidAsn1Value $e)
 		{
-			throw new RequestException ("Malformed request", ERR_MALFORMED_ASN1 );
+			throw new RequestException ("Malformed request", \Ocsp\Ocsp::ERR_MALFORMED_ASN1 );
 		}
 	}
 

@@ -87,11 +87,11 @@ class SingleResponse extends \PKIX\Message
 		}
 		catch (\Ocsp\Exception\Asn1DecodingException $e) 
 		{
-			throw new ResponseException("Malformed request", ERR_MALFORMED_ASN1);
+			throw new ResponseException("Malformed request", \Ocsp\Ocsp::ERR_MALFORMED_ASN1);
 		} 
 		catch (\Ocsp\Exception\InvalidAsn1Value $e)
 		{
-			throw new ResponseException("Malformed request", ERR_MALFORMED_ASN1);
+			throw new ResponseException("Malformed request", \Ocsp\Ocsp::ERR_MALFORMED_ASN1);
 		}
 	}
 
@@ -127,11 +127,11 @@ class SingleResponse extends \PKIX\Message
 	 *
 	 * @return array CertStatus. The first element is the certificate
 	 * status, which is one of:
-	 * - \PKIX\OCSP\CERT_STATUS_GOOD (0)
-	 * - \PKIX\OCSP\CERT_STATUS_REVOKED (1)
-	 * - \PKIX\OCSP\CERT_STATUS_UNKNOWN (2)
+	 * - \Ocsp\Ocsp::CERT_STATUS_GOOD (0)
+	 * - \Ocsp\Ocsp::CERT_STATUS_REVOKED (1)
+	 * - \Ocsp\Ocsp::CERT_STATUS_UNKNOWN (2)
 	 *
-	 * In case of \PKIX\OCSP\CERT_STATUS_REVOKED, the second
+	 * In case of \Ocsp\Ocsp::CERT_STATUS_REVOKED, the second
 	 * element of CertStatus contains the revocationTime as
 	 * DateTime. Otherwise, the second element of CertStatus is null.
 	 */
@@ -151,11 +151,11 @@ class SingleResponse extends \PKIX\Message
 
 		switch( $status->getTypeID() ) 
 		{
-			case CERT_STATUS_GOOD:
-			case CERT_STATUS_UNKNOWN:
+			case \Ocsp\Ocsp::CERT_STATUS_GOOD:
+			case \Ocsp\Ocsp::CERT_STATUS_UNKNOWN:
 				array_push( $certStatus, null );
 				break;
-			case CERT_STATUS_REVOKED:
+			case \Ocsp\Ocsp::CERT_STATUS_REVOKED:
 				$revokedInfo = asRawConstructed( $status );
 				if ( ! $revokedInfo )
 					throw new Asn1DecodingException('Expected information about the certificate\'s revokation');

@@ -11,13 +11,14 @@ try
 {
 	// $storeCfg = array('basedir'	=> __DIR__ . '/../store');
 
-	// Load the CA certificate
-	$certificateLoader = new \Ocsp\CertificateLoader();
+	// Set constant variables
 	$caConfigFile = __DIR__. '/../../certification/ca.conf';
-	$caFolder = StoreCA::getCAFolder( $caConfigFile );
 	$caKey = $caFolder . '/ca.key';
 	$caCert = $caFolder . '/ca.crt';
-	// $caConfig = $caFolder . '/ca.conf';
+
+	// Load the CA certificate
+	$certificateLoader = new \Ocsp\CertificateLoader();
+	$caFolder = StoreCA::getCAFolder( $caConfigFile );
 	$caCertificate = file_get_contents( $caCert ); // PEM
 	$caSequence = $certificateLoader->fromString( $caCertificate );
 	$certificateInfo = new \Ocsp\CertificateInfo();
@@ -48,19 +49,19 @@ catch ( \PKIX\Exception\Exception $e )
 
 	switch( $e->getCode() )
 	{
-		case \Ocsp\ERR_MALFORMED_ASN1:
-		case \Ocsp\ERR_INTERNAL_ERROR:
-		case \Ocsp\ERR_TRY_LATER:
-		case \Ocsp\ERR_SIG_REQUIRED:
-		case \Ocsp\ERR_UNAUTHORIZED:
+		case \Ocsp\Ocsp::ERR_MALFORMED_ASN1:
+		case \Ocsp\Ocsp::ERR_INTERNAL_ERROR:
+		case \Ocsp\Ocsp::ERR_TRY_LATER:
+		case \Ocsp\Ocsp::ERR_SIG_REQUIRED:
+		case \Ocsp\Ocsp::ERR_UNAUTHORIZED:
 			$r = \PKIX\OCSP\ExceptionResponse::createErrorResponse($e->getCode());
 			break;
 
-		case \Ocsp\ERR_REQLIST_EMPTY:
-			$r = \PKIX\OCSP\ExceptionResponse::createErrorResponse(\Ocsp\ERR_MALFORMED_ASN1);
+		case \Ocsp\Ocsp::ERR_REQLIST_EMPTY:
+			$r = \PKIX\OCSP\ExceptionResponse::createErrorResponse(\Ocsp\Ocsp::ERR_MALFORMED_ASN1);
 			break;
 
-		case \Ocsp\ERR_SUCCESS:
+		case \Ocsp\Ocsp::ERR_SUCCESS:
 			error_log("Caught exception $e with status code " . $e->getCode()
 				. "which should not happen! Check the code at "
 				. $e->getFile() . ":" . $e->getLine());

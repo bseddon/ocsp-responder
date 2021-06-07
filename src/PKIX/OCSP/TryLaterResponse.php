@@ -9,5 +9,5 @@ namespace PKIX\OCSP;
  */
 class TryLaterResponse extends ExceptionResponse
 {
-	protected $OCSPStatus = \Ocsp\ERR_TRY_LATER;
+	protected $OCSPStatus = \Ocsp\Ocsp::ERR_TRY_LATER;
 }

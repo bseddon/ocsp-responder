@@ -9,5 +9,5 @@ namespace PKIX\OCSP;
  */
 class MalformedRequestResponse extends ExceptionResponse
 {
-	protected $OCSPStatus = \Ocsp\ERR_MALFORMED_ASN1;
+	protected $OCSPStatus = \Ocsp\Ocsp::ERR_MALFORMED_ASN1;
 }

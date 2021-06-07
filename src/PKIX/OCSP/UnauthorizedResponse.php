@@ -9,5 +9,5 @@ namespace PKIX\OCSP;
  */
 class UnauthorizedResponse extends ExceptionResponse
 {
-	protected $OCSPStatus = \Ocsp\ERR_UNAUTHORIZED;
+	protected $OCSPStatus = \Ocsp\Ocsp::ERR_UNAUTHORIZED;
 }
