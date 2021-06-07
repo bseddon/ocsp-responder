@@ -12,13 +12,13 @@ try
 	// $storeCfg = array('basedir'	=> __DIR__ . '/../store');
 
 	// Set constant variables
-	$caConfigFile = __DIR__. '/../../certification/ca.conf';
+	$caConfigFile = __DIR__. '/../../certification2/ca.conf';
+	$caFolder = StoreCA::getCAFolder( $caConfigFile );
 	$caKey = $caFolder . '/ca.key';
 	$caCert = $caFolder . '/ca.crt';
 
 	// Load the CA certificate
 	$certificateLoader = new \Ocsp\CertificateLoader();
-	$caFolder = StoreCA::getCAFolder( $caConfigFile );
 	$caCertificate = file_get_contents( $caCert ); // PEM
 	$caSequence = $certificateLoader->fromString( $caCertificate );
 	$certificateInfo = new \Ocsp\CertificateInfo();
@@ -112,7 +112,7 @@ catch( \PKIX\Exception\Exception $e )
 }
 catch( \Exception $e)
 {
-	error_log("Oops! Caught by enexpected exception "
+	error_log("Oops! Caught by unexpected exception "
 		. get_class($e) . ":[" . $e->getCode() . "] "
 		. $e->getMessage() . " at " . $e->getFile() . ":" . $e->getLine() . "\n");
 	$r = new \PKIX\OCSP\InternalErrorResponse();
