@@ -20,7 +20,7 @@ class Response extends \PKIX\Message
 	const mimeType = 'application/ocsp-response';
 
 	/** @var string[] */
-	protected $knownResponses = array( \Ocsp\Asn1\id_pkix_ocsp_basic => '\PKIX\OCSP\BasicResponse');
+	protected $knownResponses = array( \Ocsp\Ocsp::id_pkix_ocsp_basic => '\PKIX\OCSP\BasicResponse');
 	/** @var BasicResponse */
 	protected $response;
 	/** @var int */
@@ -55,11 +55,11 @@ class Response extends \PKIX\Message
 		}
 		catch (\Ocsp\Exception\Asn1DecodingException $e) 
 		{
-			throw new ResponseException ("Malformed request", ERR_MALFORMED_ASN1);
+			throw new ResponseException ("Malformed request", \Ocsp\OCsp::ERR_MALFORMED_ASN1);
 		} 
 		catch (\Ocsp\Exception\InvalidAsn1Value $e)
 		{
-			throw new ResponseException ("Malformed request", ERR_MALFORMED_ASN1);
+			throw new ResponseException ("Malformed request", \Ocsp\Ocsp::ERR_MALFORMED_ASN1);
 		}
 	}
 

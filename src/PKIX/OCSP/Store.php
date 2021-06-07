@@ -114,7 +114,7 @@ abstract class Store
 
 		$responseBytes = (new Encoder())->encodeElement( $responseData );
 		$responseSig = "";
-		$signResult = openssl_sign( $responseBytes, $responseSig, $privateKey, \Ocsp\Asn1\OID2Name[ \Ocsp\Asn1\sha256WithRSAEncryption ] );
+		$signResult = openssl_sign( $responseBytes, $responseSig, $privateKey, \Ocsp\Ocsp::OID2Name[ \Ocsp\Ocsp::sha256WithRSAEncryption ] );
 		if( ! $signResult )
 			return false;
 
@@ -122,14 +122,14 @@ abstract class Store
 		// file_put_contents('c:/responder.txt',
 		// 	chunk_split( base64_encode( $responseBytes ) ) . "\n\n" .
 		// 	chunk_split( base64_encode( $responseSig ) ) . "\n\n" . 
-		// 	\Ocsp\Asn1\OID2Name[ \Ocsp\Asn1\sha256WithRSAEncryption ]
+		// 	\Ocsp\Asn1\OID2Name[ \Ocsp\Ocsp::sha256WithRSAEncryption ]
 		// );
 
 		$basicOCSPResponse = Sequence::create( [
 			$responseData,
 			// AlgorithmIdentifier - the algorithm use to create the signature see Section 4.1.1.2 of RFC 5280
 			Sequence::create( [
-				ObjectIdentifier::create( \Ocsp\Asn1\sha256WithRSAEncryption ),
+				ObjectIdentifier::create( \Ocsp\Ocsp::sha256WithRSAEncryption ),
 				NullElement::create() // These are any parameters in this case none
 			] ),
 			// The signature
@@ -141,12 +141,12 @@ abstract class Store
 		] );
 
 		$ResponseBytes = Sequence::create( [
-			ObjectIdentifier::create( \Ocsp\Asn1\id_pkix_ocsp_basic ),
+			ObjectIdentifier::create( \Ocsp\Ocsp::id_pkix_ocsp_basic ),
 			OctetString::create( (new Encoder())->encodeElement( $basicOCSPResponse ) )
 		] );
 
 		$ocspResponse = Sequence::create( [
-			Enumerated::create( \Ocsp\ERR_SUCCESS ),
+			Enumerated::create( \Ocsp\Ocsp::ERR_SUCCESS ),
 			$ResponseBytes->setTag( Tag::explicit( 0 ) )
 		] );
 
