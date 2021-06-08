@@ -1,0 +1,46 @@
+{
+    "name": "ocsp/responder",
+	"version": "1.0",
+    "description": "Library implement an Online Certificate Status Protocol (OCSP) responder",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Bill Seddon",
+            "email": "bill.seddon@lyquidity.com",
+            "homepage" : "https://www.xbrlquery.com",
+            "role" : "Author"
+        }
+    ],
+    "homepage": "https://github.com/bseddon/ocsp-responder/",
+    "support": {
+	    "issues": "https://github.com/bseddon/ocsp-responder/issues/",
+	    "source": "https://github.com/bseddon/ocsp-responder/"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true,
+        "optimize-autoloader": true
+    },
+	"autoload": { 
+		"files": ["./src/autoload.php"] 
+	},
+    "require": {
+        "php": ">=5.5.9",
+		"ocsp/request": ">=1.0"
+    },
+    "keywords": [
+        "ocsp",
+		"request",
+		"rfc6069",
+        "certificate",
+        "https",
+        "revoke",
+        "revocation",
+        "revoked",
+        "online certificate status protocol",
+        "check",
+        "security"
+    ]
+}
