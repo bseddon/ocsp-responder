@@ -17,18 +17,14 @@
 	    "issues": "https://github.com/bseddon/ocsp-responder/issues/",
 	    "source": "https://github.com/bseddon/ocsp-responder/"
     },
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "prefer-stable": true,
-    "config": {
-        "sort-packages": true,
-        "optimize-autoloader": true
-    },
 	"autoload": { 
 		"files": ["./src/autoload.php"] 
 	},
     "require": {
         "php": ">=5.5.9",
-		"ocsp/request": ">=1.0"
+        "ocsp/request": "dev-master"
     },
     "keywords": [
         "ocsp",
