@@ -4,13 +4,13 @@ use PKIX\OCSP\StoreCA;
 
 error_reporting(E_ALL);
 
-require_once( __DIR__ . '/../../request/src/autoload.php');
-require_once( __DIR__ . '/autoload.php');
+if ( ! class_exists('\\Ocsp\\Ocsp') ) // Will not be loaded if Composer autoload is being used
+	require_once( __DIR__ . '/../../request/src/autoload.php');
+if ( ! class_exists('\\PKIX\\OCSP\\Request') ) // Will not be loaded if Composer autoload is being used
+	require_once( __DIR__ . '/autoload.php');
 
 try 
 {
-	// $storeCfg = array('basedir'	=> __DIR__ . '/../store');
-
 	// Set constant variables
 	$caConfigFile = __DIR__. '/../../certification2/ca.conf';
 	$caFolder = StoreCA::getCAFolder( $caConfigFile );
