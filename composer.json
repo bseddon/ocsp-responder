@@ -1,6 +1,5 @@
 {
     "name": "ocsp/responder",
-	"version": "1.0",
     "description": "Library implement an Online Certificate Status Protocol (OCSP) responder",
     "license": "MIT",
     "type": "library",
