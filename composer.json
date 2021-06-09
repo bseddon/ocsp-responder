@@ -18,7 +18,6 @@
 	    "source": "https://github.com/bseddon/ocsp-responder/"
     },
     "minimum-stability": "dev",
-    "prefer-stable": true,
 	"autoload": { 
 		"files": ["./src/autoload.php"] 
 	},
