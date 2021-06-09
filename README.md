@@ -25,8 +25,23 @@ OCSP requests and responses take the form of DER encoded stream of [ASN.1](http:
 
 ### Use
 
-Make the URL used by a site for OCSP queries load the file ./src/OCSPServer.php.  The code in this file uses an OpenSSL file based CA in folder call 'certification/ca' but it can be changed.
+See the [wiki](https://github.com/bseddon/ocsp-responder/wiki) for details on how to setup a test CA and use this responder code.
 
-Certificates you generate should include the address of your OCSP query endpoint, as a URL, in the Authority Information Access (AIA) X509 certificate extension.  The CA created by the [example code in the wiki](https://github.com/bseddon/ocsp-responder/wiki) does this.  The OCSP URL in the AIA extension is used by client to discover the address to which any OCSP request should be sent.
+### Install
 
-Follow the instructions in the wiki pages to use OpenSSL create a CA, generate 'foo', 'bar' and 'xxx' certificates then revoke the 'xxx' certificate.  Creating a CA using OpenSSL makes it easy to test and verify your setup.
+Use the **composer** command to get the most recent stable version, create a folder and open a command window then type:
+
+```composer require ocsp/responder```
+
+To work at the bleeding edge, create a folder and open a command window then first create a file called composer.json with this content:
+
+```json
+{
+  "minimum-stabilty": "dev"
+}
+```
+
+Then enter the command:
+
+```composer require ocsp/responder=dev-main```
+
