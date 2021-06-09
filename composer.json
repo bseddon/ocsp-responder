@@ -16,13 +16,13 @@
 	    "issues": "https://github.com/bseddon/ocsp-responder/issues/",
 	    "source": "https://github.com/bseddon/ocsp-responder/"
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
 	"autoload": { 
 		"files": ["./src/autoload.php"] 
 	},
     "require": {
         "php": ">=5.5.9",
-        "ocsp/request": "dev-main"
+        "ocsp/request": "*"
     },
     "keywords": [
         "ocsp",
