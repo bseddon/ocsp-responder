@@ -23,7 +23,7 @@
 	},
     "require": {
         "php": ">=5.5.9",
-        "ocsp/request": "dev-master"
+        "ocsp/request": "@dev"
     },
     "keywords": [
         "ocsp",
