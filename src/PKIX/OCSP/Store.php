@@ -170,5 +170,10 @@ abstract class Store
 		return (new Encoder())->encodeElement( $ocspResponse );
 	}
 
+	/**
+	 * Create a CRL for the CA
+	 * @return string
+	 */
+	abstract function createCRL();
 }
 

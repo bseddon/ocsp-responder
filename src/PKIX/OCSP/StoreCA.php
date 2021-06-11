@@ -96,11 +96,80 @@ class StoreCA extends Store
 		return $dir;
 	}
 
+	/**
+	 * Retrieve the path to the CA database file
+	 * @param string $configPath
+	 * @return string
+	 */
 	public static function getCADatabase( $configPath )
+	{
+		return self::getCAField( $configPath, 'database' );
+	}
+
+	/**
+	 * Retrieve the path to the CA certificate
+	 * @param string $configPath
+	 * @return string
+	 */
+	public static function getCACertificatePath( $configPath )
+	{
+		return self::getCAField( $configPath, 'certificate' );
+	}
+
+	/**
+	 * Retrieve the bytes of the CA certificate
+	 * @param string $configPath
+	 * @return string[]|false A byte array or false if the file does not exist
+	 */
+	public static function getCACertificateBytes( $configPath )
+	{
+		$path = self::getCACertificatePath( $configPath );
+		return self::getFileContents( $path );
+	}
+
+	/**
+	 * Retrieve the path to the CA private key
+	 * @param string $configPath
+	 * @return string
+	 */
+	public static function getCAPrivatePath( $configPath )
+	{
+		return self::getCAField( $configPath, 'private_key' );
+	}
+
+	/**
+	 * Retrieve the bytes of the CA certificate
+	 * @param string $configPath
+	 * @return string[]|false A byte array or false if the file does not exist
+	 */
+	public static function getCAPrivateBytes( $configPath )
+	{
+		$path = self::getCAPrivatePath( $configPath );
+		return self::getFileContents( $path );
+	}
+
+	/**
+	 * Get the file contents if the path is valid or return false
+	 * @param string $path
+	 * @return string|false
+	 */
+	private static function getFileContents( $path )
+	{
+		if ( ! file_exists( $path ) ) return false;
+		return file_get_contents( $path );
+	}
+
+	/**
+	 * Core function to retrive a CA value
+	 * @param string $configPath
+	 * @param string $fieldName
+	 * @return string
+	 */
+	private static function getCAField( $configPath, $fieldName )
 	{
 		$base = dirname( $configPath );
 		$conf = parse_ini_file( $configPath );
-		if ( ! $database = $conf['database'] ) return;
+		if ( ! $fieldValue = $conf[ $fieldName ] ) return;
 	
 		$conf = array_reduce( array_keys( $conf ), function( $carry, $key ) use( &$conf )
 		{
@@ -110,16 +179,18 @@ class StoreCA extends Store
 			$carry[ '/\$' . $key . '/' ] = $value;
 			return $carry;
 		}, [] );
-		$db = preg_replace( array_keys( $conf ), array_values( $conf ), $database );
-		if ( $db[0] == '.' )
+
+		$result = preg_replace( array_keys( $conf ), array_values( $conf ), $fieldValue );
+
+		if ( $result[0] == '.' )
 		{
-			if ( ! $db = realpath( "$base/$db" ) )
+			if ( ! $result = realpath( "$base/$result" ) )
 			{
-				throw new \Exception('The file does not exist: '  . $db );
+				throw new \Exception('The file does not exist: '  . $result );
 			}
 		}
 
-		return $db;
+		return $result;
 	}
 
 	/**
@@ -223,6 +294,54 @@ class StoreCA extends Store
 		}
 
 		return $this->createResponse( $cid, $status, $publicKeyBytes, $privateKey, $caSequence, $revokedInfo );
+	}
+
+		/**
+	 * Create a CRL for the CA
+	 * @return string
+	 */
+	public function createCRL()
+	{
+		$ca_cert = self::getCACertificateBytes( $this->configFile );
+		$ca_keyBytes  = self::getCAPrivateBytes( $this->configFile );
+
+		$revoked = array_reduce( $this->certificateInfo, function( $carry, $certificate )
+		{
+			if ( $certificate['status'] == 'R' )
+			{
+				@list( $revokedDate, $reason ) = explode(',', $certificate['revokedDate'] );
+				$revDate = \Ocsp\Asn1\Element\UTCTime::decodeUTCTime( $revokedDate );
+				$carry[] = array(
+					'serial' => hex2bin( $certificate['serialNumber'] ),
+					'rev_date' => $revDate->getTimestamp(),
+					'reason' => $reason ? \PKIX\CRL::getRevokeReasonCodeByName( $reason ) : '',
+					'compr_date' => $revDate->sub( new \DateInterval('P1D'))->getTimestamp(),
+					'hold_instr' => null,
+				);
+			}
+			return $carry;
+		}, array() );
+	
+		/** @var \DateTimeImmutable $date */
+		$date = new \DateTimeImmutable("now");
+	
+		//Create CRL
+		$ci = array(
+			'no' => 1,
+			'version' => 2,
+			'days' => 30,
+			// 'days' => 1,
+			'alg' => OPENSSL_ALGO_SHA1,
+			'update' => $date->getTimestamp(),
+			'next' => $date->add( new \DateInterval('P1D'))->getTimestamp(),
+			'revoked' => $revoked
+		);
+
+		$ca_key = openssl_get_privatekey( $ca_keyBytes );
+
+		list( $crl, $crl_data ) = \PKIX\CRL::create( $ci, $ca_key, $ca_cert );
+		
+		return $crl;
 	}
 
 	/**
