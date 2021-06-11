@@ -8,7 +8,7 @@ The purpose of this responder is validate certificates you have created for clie
 
 ### Non-use case
 
-The target use of this responder is not to get browsers to recognise certificates you generate.  Browsers include a bundle of certificates from well-known root certificate authorities such as Digicert,Let's Encrypt and others.  Although the responder will generate a valid response if asked by a browser, unless your CA certificate is signed by a well-known root certificate authority or a recognized intermediary, the browser will not validate certificates you create and sign if your certificate chain does not end at a well-known root certificate authority.
+The target use of this responder is not to get browsers to recognise certificates you generate.  Browsers include a bundle of certificates from well-known root certificate authorities such as Digicert,Let's Encrypt and others.  Although the responder will generate a valid response if asked by a browser, unless your CA certificate is signed by a well-known root certificate authority or a recognized intermediary.  That is, the browser will not validate certificates you create and sign if your certificate chain does not end at a well-known root certificate authority.
 
 ### Requirements
 
