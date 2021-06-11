@@ -32,6 +32,7 @@ use Ocsp\CertificateLoader;
 use function Ocsp\Asn1\asBitString;
 use function Ocsp\Asn1\asInteger;
 use function Ocsp\Asn1\asOctetString;
+use function Ocsp\Asn1\asSequence;
 
 /**
  * X.509 CRL
@@ -160,6 +161,7 @@ class CRL
 
 		foreach( $extensions->getElements() as $k => $seq ) 
 		{
+			if ( ! $seq->isConstructed() ) continue;
 			/** @var \Ocsp\Asn1\Element\Sequence $seq */
 			$oid = \Ocsp\Asn1\asObjectIdentifier( $seq->at(1) );
 			if ( ! $oid ) continue;
@@ -174,7 +176,7 @@ class CRL
 		return null;
 	}
 
-		/**
+	/**
 	 * Get subject key identifier from decoded certificate data
 	 *
 	 * @param Sequence $cert_root root of decoded data
@@ -188,7 +190,7 @@ class CRL
 		if ( \Ocsp\Asn1\asSequence( $cert_root->first()->asSequence()->getFirstChildOfType( 0, Element::CLASS_CONTEXTSPECIFIC, Tag::ENVIRONMENT_EXPLICIT ) ) )
 			$is_v1 = true;
 
-		//Define subjKeyId
+		// Define subjKeyId
 		$subjKeyId = null;
 		$extensions = \Ocsp\Asn1\asSequence( $cert_root->first()->asSequence()->getFirstChildOfType( 3, Element::CLASS_CONTEXTSPECIFIC, Tag::ENVIRONMENT_EXPLICIT ) );
 
@@ -198,7 +200,7 @@ class CRL
 			if ( $extval_subjKeyId )
 			{
 				$subjKeyId = $extval_subjKeyId;
-				// This my be an OctetString  Ifso,decode it.
+				// This my be an OctetString  If so,decode it.
 				if ( ord( $subjKeyId[0] ) == UniversalTagID::OCTET_STRING )
 				{
 					$octet = asOctetString( (new Decoder())->decodeElement( $subjKeyId ) );
@@ -209,23 +211,27 @@ class CRL
 
 		if ( $subjKeyId === null )
 		{
-			$subjPubKey = asBitString( $cert_root->first()->asSequence()->at( $is_v1 ? 5 : 6 )->asSequence()->at(2) )->getBytes(); // This used something called 'normalizedbitstring'
-			$subjKeyId = sha1( $subjPubKey, true );
+			$certInfo = new \Ocsp\CertificateInfo();
+			$subjPubKey = $certInfo->extractSubjectPublicKeyBytes( $cert_root );
+	
+			if ( $subjPubKey )
+				$subjKeyId = sha1( $subjPubKey, true );
 		}
 
-		//Write keyIdentifier
+		// Write keyIdentifier
 		// $ret->addElement(OctetString::create( $subjKeyId ) );
 		// This is a way of setting the type id to zero which is required here
 		$ret->addElement(
 			OctetString::create( $subjKeyId )->setTag( Tag::implicit( 0 ) )
 		);
 
-		//Copy subject
-		$subject = $cert_root->first()->asSequence()->at( $is_v1 ? 5 : 6 );
-		//Copy serial
+		// Copy subject
+		$subject = asSequence( $cert_root->first()->asSequence()->getNthChildOfType( $is_v1 ? 3 : 4, \Ocsp\Asn1\UniversalTagID::SEQUENCE ) );
+
+		// Copy serial
 		$serial = asInteger( $cert_root->first()->asSequence()->at( $is_v1 ? 1 : 2 ) )->getValue();
 
-		//Write into authorityCertIssuer ([4] EXPLICIT Name)
+		// Write into authorityCertIssuer ([4] EXPLICIT Name)
 		$ret->addElements( [
 			// authorityCertIssuer
 			Sequence::create( [ 
@@ -261,21 +267,21 @@ class CRL
 	 * )
 	 * @param string $ca_pkey key pair for CA root certificate, got from openssl_pkey_get_private()
 	 * @param string $ca_cert CA root certificate data in DER format
-	 * @return string CRL in DER format
+	 * @return [Sequence, string] A two element array of the CRL as a Sequence and in DER format
 	 */
 	static function create( $ci, $ca_pkey, $ca_cert ) 
 	{
 		$ca_decoded = (new CertificateLoader())->fromString( $ca_cert );
-		
+
 		//CRL version
 		$crl_version = ( (isset( $ci['version'] ) && ( $ci['version'] == 2 || $ci['version'] == 1 ) ) ? $ci['version'] : 2 );
-		
+
 		//Algorithm
 		$algs_cipher = array( OPENSSL_KEYTYPE_RSA, OPENSSL_KEYTYPE_DSA, OPENSSL_KEYTYPE_DH, OPENSSL_KEYTYPE_EC );
 		$algs_hash = array( /*OPENSSL_ALGO_DSS1, */OPENSSL_ALGO_SHA1, OPENSSL_ALGO_MD5, OPENSSL_ALGO_MD4 );
 		if ( defined('OPENSSL_ALGO_MD2') )
 			$algs_hash[] = OPENSSL_ALGO_MD2;
-		
+
 		/** @var \OpenSSLAsymmetricKey $ca_pkey */
 		$ca_pkey_details = openssl_pkey_get_details( $ca_pkey );
 
@@ -286,12 +292,12 @@ class CRL
 
 		if ( ! in_array(  $ca_pkey_type, $algs_cipher ) )
 			return false;
-		
+
 		if ( isset( $ci['alg']) && ! in_array( $ci['alg'], $algs_hash ) )
 			return false;
 
 		$crl_hash_alg = ( isset( $ci['alg'] ) ? $ci['alg'] : OPENSSL_ALGO_SHA1 );		
-		
+
 		$sign_alg_oid = OID::getAlgoOID($ca_pkey_type, $crl_hash_alg);
 
 		if ( $sign_alg_oid === false )
@@ -299,7 +305,7 @@ class CRL
 
 		//Create CRL stricture
 		$tbsCertList = new Sequence();
-		
+
 		if($crl_version == 2)
 		{
 			$tbsCertList->addElement( Integer::create( $crl_version - 1 ) );
@@ -324,7 +330,6 @@ class CRL
 		$crl = Sequence::create([
 			$tbsCertList
 		]);
-
 		
 		//Revoked certs list
 		if( isset( $ci['revoked']) && $ci['revoked'] && is_array( $ci['revoked'] ) )
@@ -334,7 +339,7 @@ class CRL
 
 			foreach( $ci['revoked'] as $i => $revokedCert ) 
 			{
-				$revCert = Sequence::create( [ Integer::create( $revokedCert['serial'] ) ] );
+				$revCert = Sequence::create( [ Integer::create( \gmp_import( $revokedCert['serial'] ) ) ] );
 				$revokedCertificates->addElement( $revCert );
 
 				if( ! is_null( $revokedCert['rev_date'] ) )
@@ -362,7 +367,7 @@ class CRL
 							ObjectIdentifier::create( OID::getOIDFromName("invalidityDate") ),
 							OctetString::create( 
 								(new Encoder())->encodeElement(
-									GeneralizedTime::create( new \DateTimeImmutable( $revokedCert['compr_date'] ) )
+									GeneralizedTime::create( (new \DateTimeImmutable())->setTimestamp( $revokedCert['compr_date'] ) )
 								)
 							)
 						] );
@@ -402,7 +407,7 @@ class CRL
 			]);
 			$crlExts->addElement( $authorityKeyIdentifier );
 			
-			echo join( ',', unpack( 'C*', (new Encoder())->encodeElement( $crlExts ) ) );
+			// echo join( ',', unpack( 'C*', (new Encoder())->encodeElement( $crlExts ) ) );
 
 			if ( isset( $ci['no'] ) && is_numeric( $ci['no'] ) )
 			{
@@ -413,7 +418,7 @@ class CRL
 				$crlExts->addElement( $cRLNumber );
 			}
 		}
-		
+
 		// Sign CRL info
 		$crl_info = (new Encoder())->encodeElement( $tbsCertList );
 		$crl_sig = "";
