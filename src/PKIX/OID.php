@@ -100,15 +100,33 @@ class OID
 		"1.2.840.113549.2.2" => "md4",
 		"1.2.840.113549.2.5" => "md5",
 		"1.2.840.113549.2.26" => "sha1",
+		'2.16.840.1.101.3.4.2.1' => 'SHA256',
+        '2.16.840.1.101.3.4.2.2' => 'SHA384',
+        '2.16.840.1.101.3.4.2.3' => 'SHA512',
+        '2.16.840.1.101.3.4.2.4' => 'SHA224',
+
 		//dsa
 		"1.2.840.10040.4.1" => "dsaEncryption",
-		"1.2.840.10040.4.3" => "dsaWithSHA1Encryption",
+		'1.2.840.10040.4.3' => 'DSA-SHA1', /* id-dsa-with-sha1 */
 		//rsa
-		"1.2.840.113549.1.1.1" => "rsaEncryption",
+		'1.2.840.113549.1.1.1' => 'RSA', /* rsaEncryption */
 		"1.2.840.113549.1.1.2" => "md2withRSAEncryption",
 		"1.2.840.113549.1.1.3" => "md4withRSAEncryption",
-		"1.2.840.113549.1.1.4" => "md5withRSAEncryption",
-		"1.2.840.113549.1.1.5" => "sha1withRSAEncryption",
+		'1.2.840.113549.1.1.4' => 'RSA-MD5', /* md5WithRSAEncryption */
+		'1.2.840.113549.1.1.5' => 'RSA-SHA1', /* sha1WithRSAEncryption */
+		'1.2.840.113549.1.1.11' => 'SHA256', /* sha256WithRSAEncryption */
+		'1.2.840.113549.1.1.12' => 'SHA384', /* sha384WithRSAEncryption */
+		'1.2.840.113549.1.1.13' => 'SHA512', /* sha512WithRSAEncryption */
+		'1.2.840.113549.1.1.14' => 'SHA224', /* sha224WithRSAEncryption */
+
+		// TSA
+		"1.2.840.113549.1.7.2" => "id-signedData",
+		"1.2.840.113549.1.9.16.1.4" => "id-ct-TSTInfo", // Defined in IETF RFC 3161.
+		"1.2.840.113549.1.9.16.2.12" => "signing-certificate", // S/MIME signing certificate
+		"1.2.840.113549.1.9.3" => "id-contentType", // From IETF RFC 5652.
+		"1.2.840.113549.1.9.4" => "id-messageDigest", // From IETF RFC 5652.
+		"1.2.840.113549.1.9.5" => "id-signingTime", // From IETF RFC 5652.
+
 		//ec
 		"1.2.840.10045.4.1" => "ecdsa-with-SHA1",
 		"1.2.840.10045.4.3.2" => "ecdsa-with-sha256",
@@ -167,7 +185,7 @@ class OID
   	 	"1.3.6.1.5.5.7.48.2" => "caIssuers",
 		// <<<<< pkix (1.3.6.1.5.5.7)
 
-		"1.3.14.3.2.26" => "SHA1",
+		// "1.3.14.3.2.26" => "SHA1",
 		
 		// CRL
 		"2.5.29.20" => "cRLNumber",
