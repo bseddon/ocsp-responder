@@ -18,7 +18,64 @@ class OID
 {
 	/** @var bool Use online repositories to get human name of OID */
 	static public $useOnlineRepos = false;
-	
+
+	/**
+	 * Get an array of algorithms that are valid for the version of PHP
+	 *
+	 * @return int[]
+	 */
+	public static function getValidAlgorithms()
+	{
+		$algorithms = array(
+			'OPENSSL_ALGO_DSS1',
+			'OPENSSL_ALGO_SHA1',
+			'OPENSSL_ALGO_SHA224',
+			'OPENSSL_ALGO_SHA256',
+			'OPENSSL_ALGO_SHA384',
+			'OPENSSL_ALGO_SHA512',
+			'OPENSSL_ALGO_RMD160',
+			'OPENSSL_ALGO_MD5',
+			'OPENSSL_ALGO_MD4',
+			'OPENSSL_ALGO_MD2'
+		);
+
+		return array_reduce( $algorithms, function( $carry, $algorithm )
+		{
+			if ( ! defined( $algorithm ) ) return $carry;
+			$carry[ $algorithm ] = constant( $algorithm );
+			return $carry;
+		}, array() );
+	}
+
+	public static function getOpenSSLAlgorithm( $name )
+	{
+		switch($name)
+		{
+			case "MD2":
+			case "md2withRSAEncryption":
+				return OPENSSL_ALGO_MD2;
+			case "MD4":
+			case "md4withRSAEncryption":
+				return OPENSSL_ALGO_MD4;
+			case "MD5":
+			case 'RSA-MD5':
+				return OPENSSL_ALGO_MD5;
+			case 'SHA224':
+				return OPENSSL_ALGO_SHA224;
+			case 'SHA256':
+				return OPENSSL_ALGO_SHA256;
+			case 'SHA384': 
+				return OPENSSL_ALGO_SHA384;
+			case 'SHA512':
+				return OPENSSL_ALGO_SHA512;
+
+			case 'RSA': 
+			case 'RSA-SHA1':
+			default:
+				return OPENSSL_ALGO_SHA1;
+		}
+	}
+
 	/**
 	 * Get OID of encryption algorithm
 	 *
@@ -26,12 +83,21 @@ class OID
 	 * @param int $digest OPENSSL_ALGO_*
 	 * @return false|string OID
 	 */
-	public static function getAlgoOID($cipher, $digest) {
+	public static function getAlgoOID($cipher, $digest) 
+	{
 		switch($cipher) {
 			case OPENSSL_KEYTYPE_RSA:
 				switch($digest) {
 					case OPENSSL_ALGO_SHA1:
 						return self::getOIDFromName('sha1withRSAEncryption');
+					case OPENSSL_ALGO_SHA224:
+						return self::getOIDFromName('sha224withRSAEncryption');
+					case OPENSSL_ALGO_SHA256:
+						return self::getOIDFromName('sha256withRSAEncryption');
+					case OPENSSL_ALGO_SHA384:
+						return self::getOIDFromName('sha384withRSAEncryption');
+					case OPENSSL_ALGO_SHA512:
+						return self::getOIDFromName('sha512withRSAEncryption');
 					case OPENSSL_ALGO_MD5:
 						return self::getOIDFromName('md5withRSAEncryption');
 					case OPENSSL_ALGO_MD4:
@@ -185,7 +251,7 @@ class OID
   	 	"1.3.6.1.5.5.7.48.2" => "caIssuers",
 		// <<<<< pkix (1.3.6.1.5.5.7)
 
-		// "1.3.14.3.2.26" => "SHA1",
+		"1.3.14.3.2.26" => "SHA1",
 		
 		// CRL
 		"2.5.29.20" => "cRLNumber",
