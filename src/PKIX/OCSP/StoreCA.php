@@ -10,11 +10,11 @@
 
 namespace PKIX\OCSP;
 
-use Ocsp\Asn1\Element\Enumerated;
-use Ocsp\Asn1\Element\GeneralizedTime;
-use Ocsp\Asn1\Element\Sequence;
-use Ocsp\Asn1\Element\UTCTime;
-use Ocsp\Asn1\Tag;
+use \lyquidity\Asn1\Element\Enumerated;
+use \lyquidity\Asn1\Element\GeneralizedTime;
+use \lyquidity\Asn1\Element\Sequence;
+use \lyquidity\Asn1\Element\UTCTime;
+use \lyquidity\Asn1\Tag;
 use PKIX\CRL;
 use PKIX\Exception\Exception;
 
@@ -85,7 +85,8 @@ class StoreCA extends Store
 	public static function getCAFolder( $configPath )
 	{
 		$base = dirname( $configPath );
-		$conf = parse_ini_file( $configPath );
+		$conf = str_replace( "#", ";", file_get_contents( $configPath ) );
+		$conf = parse_ini_string( $conf );
 		$dir = $conf['dir'] ?? false;
 
 		if ( ! $dir || ! $dir = realpath( "$base/$dir" ) )
@@ -168,7 +169,8 @@ class StoreCA extends Store
 	private static function getCAField( $configPath, $fieldName )
 	{
 		$base = dirname( $configPath );
-		$conf = parse_ini_file( $configPath );
+		$ini = str_replace( "#", ";", file_get_contents( $configPath ) );
+		$conf = parse_ini_string( $ini );
 		if ( ! $fieldValue = $conf[ $fieldName ] ) return;
 	
 		$conf = array_reduce( array_keys( $conf ), function( $carry, $key ) use( &$conf )
@@ -249,7 +251,7 @@ class StoreCA extends Store
 		// Find the certificate
 		if ( ! isset( $certificates[ base64_encode( $cid['issuerKeyHash'] ) ] ) )
 		{
-			throw new Exception( "Issuer certificate not found", \Ocsp\Ocsp::ERR_UNAUTHORIZED );
+			throw new Exception( "Issuer certificate not found", \lyquidity\OCSP\Ocsp::ERR_UNAUTHORIZED );
 		}
 
 		/** 
@@ -262,7 +264,7 @@ class StoreCA extends Store
 		// $requestInfo = $info->extractRequestInfo( $caSequence, $caSequence );
 		if ( ! $publicKeyBytes = $requestInfo->getIssuerPublicKeyBytes() ?? null )
 		{
-			throw new Exception( "Unable to find the public key in the responder certificate", \Ocsp\Ocsp::ERR_UNAUTHORIZED );
+			throw new Exception( "Unable to find the public key in the responder certificate", \lyquidity\OCSP\Ocsp::ERR_UNAUTHORIZED );
 		}
 
 		// Access the serial number
@@ -280,7 +282,7 @@ class StoreCA extends Store
 		switch( $certInfo['status'] )
 		{
 			case 'E': // expired
-				throw new Exception( "Certificate revoked", \Ocsp\Ocsp::ERR_UNAUTHORIZED );
+				throw new Exception( "Certificate revoked", \lyquidity\OCSP\Ocsp::ERR_UNAUTHORIZED );
 			case 'R': // revoked
 				$status = 1;
 				list( $date, $reason ) = explode( ',', $certInfo['revokedDate'] );
@@ -310,7 +312,7 @@ class StoreCA extends Store
 			if ( $certificate['status'] == 'R' )
 			{
 				@list( $revokedDate, $reason ) = explode(',', $certificate['revokedDate'] );
-				$revDate = \Ocsp\Asn1\Element\UTCTime::decodeUTCTime( $revokedDate );
+				$revDate = \lyquidity\Asn1\Element\UTCTime::decodeUTCTime( $revokedDate );
 				$carry[] = array(
 					'serial' => hex2bin( $certificate['serialNumber'] ),
 					'rev_date' => $revDate->getTimestamp(),

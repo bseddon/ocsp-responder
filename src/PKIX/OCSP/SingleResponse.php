@@ -4,15 +4,15 @@
  */
 namespace PKIX\OCSP;
 
-use Ocsp\Asn1\Element;
-use Ocsp\Asn1\Element\GeneralizedTime;
-use Ocsp\Asn1\Tag;
-use Ocsp\Asn1\UniversalTagID;
-use Ocsp\Exception\Asn1DecodingException;
-use PKIX\CRL;
-use PKIX\Exception\ResponseException;
+use \lyquidity\Asn1\Element;
+use \lyquidity\Asn1\Element\GeneralizedTime;
+use \lyquidity\Asn1\Tag;
+use \lyquidity\Asn1\UniversalTagID;
+use \lyquidity\Asn1\Exception\Asn1DecodingException;
+use \PKIX\CRL;
+use \PKIX\Exception\ResponseException;
 
-use function Ocsp\Asn1\asRawConstructed;
+use function \lyquidity\Asn1\asRawConstructed;
 
 /**
  * SingleResponse message (see RFC6960)
@@ -76,22 +76,22 @@ class SingleResponse extends \PKIX\Message
 			 * We parse only thisUpdate and nextUpdate fields by default.
 			 * Other fields are only parsed when requested by get* methods.
 			 */
-			$updateTime = \Ocsp\Asn1\asGeneralizedTime( $this->_tlv->getFirstChildOfType( UniversalTagID::GENERALIZEDTIME ) );
+			$updateTime = \lyquidity\Asn1\asGeneralizedTime( $this->_tlv->getFirstChildOfType( UniversalTagID::GENERALIZEDTIME ) );
 			$this->thisUpdate = $updateTime->getValue();
 
-			$nextUpdate = \Ocsp\Asn1\asGeneralizedTime( $this->_tlv->getFirstChildOfType( 0, Element::CLASS_CONTEXTSPECIFIC, Tag::ENVIRONMENT_EXPLICIT ) );
+			$nextUpdate = \lyquidity\Asn1\asGeneralizedTime( $this->_tlv->getFirstChildOfType( 0, Element::CLASS_CONTEXTSPECIFIC, Tag::ENVIRONMENT_EXPLICIT ) );
 			if ( $nextUpdate )
 			{
 				$this->nextUpdate = $nextUpdate->getValue();
 			}
 		}
-		catch (\Ocsp\Exception\Asn1DecodingException $e) 
+		catch (\lyquidity\Asn1\Exception\Asn1DecodingException $e) 
 		{
-			throw new ResponseException("Malformed request", \Ocsp\Ocsp::ERR_MALFORMED_ASN1);
+			throw new ResponseException("Malformed request", \lyquidity\OCSP\Ocsp::ERR_MALFORMED_ASN1);
 		} 
-		catch (\Ocsp\Exception\InvalidAsn1Value $e)
+		catch (\lyquidity\Asn1\Exception\InvalidAsn1Value $e)
 		{
-			throw new ResponseException("Malformed request", \Ocsp\Ocsp::ERR_MALFORMED_ASN1);
+			throw new ResponseException("Malformed request", \lyquidity\OCSP\Ocsp::ERR_MALFORMED_ASN1);
 		}
 	}
 
@@ -127,11 +127,11 @@ class SingleResponse extends \PKIX\Message
 	 *
 	 * @return array CertStatus. The first element is the certificate
 	 * status, which is one of:
-	 * - \Ocsp\Ocsp::CERT_STATUS_GOOD (0)
-	 * - \Ocsp\Ocsp::CERT_STATUS_REVOKED (1)
-	 * - \Ocsp\Ocsp::CERT_STATUS_UNKNOWN (2)
+	 * - \lyquidity\OCSP\Ocsp::CERT_STATUS_GOOD (0)
+	 * - \lyquidity\OCSP\Ocsp::CERT_STATUS_REVOKED (1)
+	 * - \lyquidity\OCSP\Ocsp::CERT_STATUS_UNKNOWN (2)
 	 *
-	 * In case of \Ocsp\Ocsp::CERT_STATUS_REVOKED, the second
+	 * In case of \lyquidity\OCSP\Ocsp::CERT_STATUS_REVOKED, the second
 	 * element of CertStatus contains the revocationTime as
 	 * DateTime. Otherwise, the second element of CertStatus is null.
 	 */
@@ -151,28 +151,28 @@ class SingleResponse extends \PKIX\Message
 
 		switch( $status->getTypeID() ) 
 		{
-			case \Ocsp\Ocsp::CERT_STATUS_GOOD:
-			case \Ocsp\Ocsp::CERT_STATUS_UNKNOWN:
+			case \lyquidity\OCSP\Ocsp::CERT_STATUS_GOOD:
+			case \lyquidity\OCSP\Ocsp::CERT_STATUS_UNKNOWN:
 				array_push( $certStatus, null );
 				break;
-			case \Ocsp\Ocsp::CERT_STATUS_REVOKED:
+			case \lyquidity\OCSP\Ocsp::CERT_STATUS_REVOKED:
 				$revokedInfo = asRawConstructed( $status );
 				if ( ! $revokedInfo )
 					throw new Asn1DecodingException('Expected information about the certificate\'s revokation');
 
-				$revokedTime = \Ocsp\Asn1\asGeneralizedTime( $revokedInfo->getFirstChildOfType( UniversalTagID::GENERALIZEDTIME ) );
+				$revokedTime = \lyquidity\Asn1\asGeneralizedTime( $revokedInfo->getFirstChildOfType( UniversalTagID::GENERALIZEDTIME ) );
 				if ( $revokedTime )
 				{
 					array_push( $certStatus, $revokedTime->getValue() );
 				}
 
-				$revokedReasonCode = \Ocsp\Asn1\asEnumerated( $revokedInfo->getFirstChildOfType( UniversalTagID::ENUMERATED ) );
+				$revokedReasonCode = \lyquidity\Asn1\asEnumerated( $revokedInfo->getFirstChildOfType( UniversalTagID::ENUMERATED ) );
 				if ( $revokedReasonCode )
 				{
 					array_push( $certStatus, CRL::getRevokeReasonNameByCode( $revokedReasonCode->getValue() ) );
 				}
 				
-				$time = \Ocsp\Asn1\asGeneralizedTime( $this->_tlv->getFirstChildOfType( UniversalTagID::GENERALIZEDTIME ) );
+				$time = \lyquidity\Asn1\asGeneralizedTime( $this->_tlv->getFirstChildOfType( UniversalTagID::GENERALIZEDTIME ) );
 				if ( $time )
 				{
 					array_push( $certStatus, $time->getValue() );

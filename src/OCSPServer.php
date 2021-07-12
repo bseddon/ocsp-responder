@@ -4,8 +4,8 @@ use PKIX\OCSP\StoreCA;
 
 error_reporting(E_ALL);
 
-if ( ! class_exists('\\Ocsp\\Ocsp') ) // Will not be loaded if Composer autoload is being used
-	require_once( __DIR__ . '/../../request/src/autoload.php');
+if ( ! class_exists('\\lyquidity\\OCSP\\Ocsp') ) // Will not be loaded if Composer autoload is being used
+	require_once( __DIR__ . '/../../requester/src/autoload.php');
 if ( ! class_exists('\\PKIX\\OCSP\\Request') ) // Will not be loaded if Composer autoload is being used
 	require_once( __DIR__ . '/autoload.php');
 
@@ -18,10 +18,10 @@ try
 	$caCert = $caFolder . '/ca.crt';
 
 	// Load the CA certificate
-	$certificateLoader = new \Ocsp\CertificateLoader();
+	$certificateLoader = new \lyquidity\OCSP\CertificateLoader();
 	$caCertificate = file_get_contents( $caCert ); // PEM
 	$caSequence = $certificateLoader->fromString( $caCertificate );
-	$certificateInfo = new \Ocsp\CertificateInfo();
+	$certificateInfo = new lyquidity\OCSP\CertificateInfo();
 	$requestInfo = $certificateInfo->extractRequestInfo( $caSequence, $caSequence );
 	$certificates[ base64_encode( sha1( $requestInfo->getIssuerPublicKeyBytes(), true) ) ] = array( $requestInfo, file_get_contents( $caKey ), $caSequence  );
 
@@ -49,19 +49,19 @@ catch ( \PKIX\Exception\Exception $e )
 
 	switch( $e->getCode() )
 	{
-		case \Ocsp\Ocsp::ERR_MALFORMED_ASN1:
-		case \Ocsp\Ocsp::ERR_INTERNAL_ERROR:
-		case \Ocsp\Ocsp::ERR_TRY_LATER:
-		case \Ocsp\Ocsp::ERR_SIG_REQUIRED:
-		case \Ocsp\Ocsp::ERR_UNAUTHORIZED:
+		case \lyquidity\OCSP\Ocsp::ERR_MALFORMED_ASN1:
+		case \lyquidity\OCSP\Ocsp::ERR_INTERNAL_ERROR:
+		case \lyquidity\OCSP\Ocsp::ERR_TRY_LATER:
+		case \lyquidity\OCSP\Ocsp::ERR_SIG_REQUIRED:
+		case \lyquidity\OCSP\Ocsp::ERR_UNAUTHORIZED:
 			$r = \PKIX\OCSP\ExceptionResponse::createErrorResponse($e->getCode());
 			break;
 
-		case \Ocsp\Ocsp::ERR_REQLIST_EMPTY:
-			$r = \PKIX\OCSP\ExceptionResponse::createErrorResponse(\Ocsp\Ocsp::ERR_MALFORMED_ASN1);
+		case \lyquidity\OCSP\Ocsp::ERR_REQLIST_EMPTY:
+			$r = \PKIX\OCSP\ExceptionResponse::createErrorResponse( \lyquidity\OCSP\Ocsp::ERR_MALFORMED_ASN1);
 			break;
 
-		case \Ocsp\Ocsp::ERR_SUCCESS:
+		case \lyquidity\OCSP\Ocsp::ERR_SUCCESS:
 			error_log("Caught exception $e with status code " . $e->getCode()
 				. "which should not happen! Check the code at "
 				. $e->getFile() . ":" . $e->getLine());

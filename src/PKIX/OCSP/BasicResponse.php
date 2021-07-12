@@ -4,11 +4,11 @@
  */
 namespace PKIX\OCSP;
 
-use Ocsp\Asn1\Element\Sequence;
-use Ocsp\Asn1\UniversalTagID;
+use \lyquidity\Asn1\Element\Sequence;
+use \lyquidity\Asn1\UniversalTagID;
 use PKIX\Exception\ResponseException;
 
-use function Ocsp\Asn1\asSequence;
+use function \lyquidity\Asn1\asSequence;
 
 /**
  * BasicResponse message (see RFC2560)
@@ -35,10 +35,10 @@ class BasicResponse extends \PKIX\Message
 		try
 		{
 			/** @var Sequence */
-			$this->_tlv = ( new \Ocsp\Asn1\Der\Decoder() )->decodeElement( $data );
+			$this->_tlv = ( new \lyquidity\Asn1\Der\Decoder() )->decodeElement( $data );
 
 			$tbsResponseData = $this->_tlv->first()->asSequence();
-			$dateTime = \Ocsp\Asn1\asGeneralizedTime( $tbsResponseData->getFirstChildOfType( UniversalTagID::GENERALIZEDTIME ) );
+			$dateTime = \lyquidity\Asn1\asGeneralizedTime( $tbsResponseData->getFirstChildOfType( UniversalTagID::GENERALIZEDTIME ) );
 			// $this->producedAt = $this->DateTimefromString( $dateTime );
 			$this->producedAt = $dateTime->getValue();
 
@@ -47,13 +47,13 @@ class BasicResponse extends \PKIX\Message
 			/* We care only about the first SingleResponse */
 			$this->singleResponse = new SingleResponse( $this->responses->first() );
 		}
-		catch (\Ocsp\Exception\Asn1DecodingException $e) 
+		catch (\lyquidity\Asn1\Exception\Asn1DecodingException $e) 
 		{
-			throw new ResponseException ("Malformed request", \Ocsp\Ocsp::ERR_MALFORMED_ASN1);
+			throw new ResponseException ("Malformed request", \lyquidity\OCSP\Ocsp::ERR_MALFORMED_ASN1);
 		} 
-		catch (\Ocsp\Exception\InvalidAsn1Value $e)
+		catch (\lyquidity\Asn1\Exception\InvalidAsn1Value $e)
 		{
-			throw new ResponseException ("Malformed request", \Ocsp\Ocsp::ERR_MALFORMED_ASN1);
+			throw new ResponseException ("Malformed request", \lyquidity\OCSP\Ocsp::ERR_MALFORMED_ASN1);
 		}
 	}
 
@@ -141,7 +141,7 @@ class BasicResponse extends \PKIX\Message
 	public function getSignedData()
 	{
 		// Don't think this is right but need and example
-        return ( new \Ocsp\Asn1\Der\Encoder() )->encodeElement( $this->_tlv->first() );
+        return ( new \lyquidity\Asn1\Der\Encoder() )->encodeElement( $this->_tlv->first() );
 	}
 
 	/**
@@ -158,7 +158,7 @@ class BasicResponse extends \PKIX\Message
 	public function verifySignature( $signer = null )
 	{
 		$signedData = $this->getSignedData();
-		$signers = \Ocsp\Ocsp::verifySigning( $this->_tlv, $signer, $signer );
+		$signers = \lyquidity\OCSP\Ocsp::verifySigning( $this->_tlv, $signer, $signer );
 	}
 	/*@} end of Signature Verification (Local implementation) */
 }

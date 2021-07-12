@@ -4,13 +4,13 @@
  */
 namespace PKIX\OCSP;
 
-use Ocsp\Asn1\Element;
-use Ocsp\Asn1\Element\Integer;
-use Ocsp\Asn1\Element\ObjectIdentifier;
-use Ocsp\Asn1\Element\OctetString;
-use Ocsp\Asn1\Element\Sequence;
-use Ocsp\Asn1\Tag;
-use Ocsp\Asn1\UniversalTagID;
+use \lyquidity\Asn1\Element;
+use \lyquidity\Asn1\Element\Integer;
+use \lyquidity\Asn1\Element\ObjectIdentifier;
+use \lyquidity\Asn1\Element\OctetString;
+use \lyquidity\Asn1\Element\Sequence;
+use \lyquidity\Asn1\Tag;
+use \lyquidity\Asn1\UniversalTagID;
 use PKIX\Exception\RequestException;
 
 use const Ocsp\ERR_MALFORMED_ASN1;
@@ -40,7 +40,7 @@ class Request extends \PKIX\Message
 	{
 		try 
 		{
-			$this->_tlv = ( new \Ocsp\Asn1\Der\Decoder() )->decodeElement( $data );
+			$this->_tlv = ( new \lyquidity\Asn1\Der\Decoder() )->decodeElement( $data );
 
 			// The request structure has sequences nested 4 deep before reaching the values needed for verification
 			$tbsRequest = $this->_tlv->first()->asSequence();
@@ -48,7 +48,7 @@ class Request extends \PKIX\Message
 			$version = $tbsRequest->getFirstChildOfType( UniversalTagID::INTEGER, Element::CLASS_CONTEXTSPECIFIC );
 			if ($version != null && $version->getValue() != 0 ) 
 			{
-				throw new RequestException("Unsupported OCSPRequest message version", \Ocsp\Ocsp::ERR_UNSUPPORTED_VERSION);
+				throw new RequestException("Unsupported OCSPRequest message version", \lyquidity\OCSP\Ocsp::ERR_UNSUPPORTED_VERSION);
 			}
 
 			/* skipped: requestorName */
@@ -66,11 +66,11 @@ class Request extends \PKIX\Message
 				foreach ($extensions->getElements() as $i => $extension)
 				{
 					/** @var Sequence $extension */
-					$extoid = \Ocsp\Asn1\asObjectIdentifier( $extension->first() )->getIdentifier();
-					$critical = \Ocsp\Asn1\asBoolean( $extension->getFirstChildOfType( UniversalTagID::BOOLEAN ) );
+					$extoid = \lyquidity\Asn1\asObjectIdentifier( $extension->first() )->getIdentifier();
+					$critical = \lyquidity\Asn1\asBoolean( $extension->getFirstChildOfType( UniversalTagID::BOOLEAN ) );
 					if ( $critical && $critical->getValue() )
 					{
-						throw new RequestException ("Unsupported critical extension $extoid", \Ocsp\Ocsp::ERR_UNSUPPORTED_EXT);
+						throw new RequestException ("Unsupported critical extension $extoid", \lyquidity\OCSP\Ocsp::ERR_UNSUPPORTED_EXT);
 					}
 				}
 			}
@@ -80,11 +80,11 @@ class Request extends \PKIX\Message
 			$reqCnt = count( $requestList->getElements() );
 			if ($reqCnt == 0)
 			{
-				throw new RequestException ("No certificate status requested", \Ocsp\Ocsp::ERR_REQLIST_EMPTY );
+				throw new RequestException ("No certificate status requested", \lyquidity\OCSP\Ocsp::ERR_REQLIST_EMPTY );
 			}
 			if ($reqCnt > 1)
 			{
-				throw new RequestException ("Multiple certificate status requested", \Ocsp\Ocsp::ERR_REQLIST_MULTI );
+				throw new RequestException ("Multiple certificate status requested", \lyquidity\OCSP\Ocsp::ERR_REQLIST_MULTI );
 			}
 
 			$request = $requestList->first()->asSequence();
@@ -97,24 +97,24 @@ class Request extends \PKIX\Message
 				foreach( $singleRequestExtensions->getElements() as $extension) 
 				{
 					/** @var Sequence $extension */
-					$extoid = \Ocsp\Asn1\asObjectIdentifier( $extension->first() )->getIdentifier();
-					$critical = \Ocsp\Asn1\asBoolean( $extension->getFirstChildOfType( UniversalTagID::BOOLEAN ) );
+					$extoid = \lyquidity\Asn1\asObjectIdentifier( $extension->first() )->getIdentifier();
+					$critical = \lyquidity\Asn1\asBoolean( $extension->getFirstChildOfType( UniversalTagID::BOOLEAN ) );
 					if ( $critical && $critical->getValue() )
 					{
-						throw new RequestException( "Unsupported critical extension $extoid", \Ocsp\Ocsp::ERR_UNSUPPORTED_EXT );
+						throw new RequestException( "Unsupported critical extension $extoid", \lyquidity\OCSP\Ocsp::ERR_UNSUPPORTED_EXT );
 					}
 				}
 			}
 
 			$this->CertID = self::parseCertID( $request->first()->asSequence() );
 		}
-		catch (\Ocsp\Exception\Asn1DecodingException $e) 
+		catch (\lyquidity\Asn1\Exception\Asn1DecodingException $e) 
 		{
-			throw new RequestException ("Malformed request", \Ocsp\Ocsp::ERR_MALFORMED_ASN1 );
+			throw new RequestException ("Malformed request", \lyquidity\OCSP\Ocsp::ERR_MALFORMED_ASN1 );
 		} 
-		catch (\Ocsp\Exception\InvalidAsn1Value $e)
+		catch (\lyquidity\Asn1\Exception\InvalidAsn1Value $e)
 		{
-			throw new RequestException ("Malformed request", \Ocsp\Ocsp::ERR_MALFORMED_ASN1 );
+			throw new RequestException ("Malformed request", \lyquidity\OCSP\Ocsp::ERR_MALFORMED_ASN1 );
 		}
 	}
 
@@ -139,10 +139,10 @@ class Request extends \PKIX\Message
 			'serialNumber'
 		);
 
-		$CertID[ $keys[ 0 ] ] = \Ocsp\Asn1\asObjectIdentifier( $CID->at(1)->asSequence()->at(1) )->getIdentifier();
-		$CertID[ $keys[ 1 ] ] = \Ocsp\Asn1\asOctetString( $CID->at(2) )->getValue();
-		$CertID[ $keys[ 2 ] ] = \Ocsp\Asn1\asOctetString( $CID->at(3) )->getValue();
-		$CertID[ $keys[ 3 ] ] = \Ocsp\Asn1\asInteger( $CID->at(4) )->getEncodedValue( new \Ocsp\Asn1\Der\Encoder() );
+		$CertID[ $keys[ 0 ] ] = \lyquidity\Asn1\asObjectIdentifier( $CID->at(1)->asSequence()->at(1) )->getIdentifier();
+		$CertID[ $keys[ 1 ] ] = \lyquidity\Asn1\asOctetString( $CID->at(2) )->getValue();
+		$CertID[ $keys[ 2 ] ] = \lyquidity\Asn1\asOctetString( $CID->at(3) )->getValue();
+		$CertID[ $keys[ 3 ] ] = \lyquidity\Asn1\asInteger( $CID->at(4) )->getEncodedValue( new \lyquidity\Asn1\Der\Encoder() );
 
 		return $CertID;
 	}

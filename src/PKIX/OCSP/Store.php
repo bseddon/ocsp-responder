@@ -1,19 +1,19 @@
 <?php
 namespace PKIX\OCSP;
 
-use Ocsp\Asn1\Der\Encoder;
-use Ocsp\Asn1\Element;
-use Ocsp\Asn1\Element\BitString;
-use Ocsp\Asn1\Element\Enumerated;
-use Ocsp\Asn1\Element\GeneralizedTime;
-use Ocsp\Asn1\Element\Integer;
-use Ocsp\Asn1\Element\NullElement;
-use Ocsp\Asn1\Element\ObjectIdentifier;
-use Ocsp\Asn1\Element\OctetString;
-use Ocsp\Asn1\Element\RawConstructed;
-use Ocsp\Asn1\Element\RawPrimitive;
-use Ocsp\Asn1\Element\Sequence;
-use Ocsp\Asn1\Tag;
+use \lyquidity\Asn1\Der\Encoder;
+use \lyquidity\Asn1\Element;
+use \lyquidity\Asn1\Element\BitString;
+use \lyquidity\Asn1\Element\Enumerated;
+use \lyquidity\Asn1\Element\GeneralizedTime;
+use \lyquidity\Asn1\Element\Integer;
+use \lyquidity\Asn1\Element\NullElement;
+use \lyquidity\Asn1\Element\ObjectIdentifier;
+use \lyquidity\Asn1\Element\OctetString;
+use \lyquidity\Asn1\Element\RawConstructed;
+use \lyquidity\Asn1\Element\RawPrimitive;
+use \lyquidity\Asn1\Element\Sequence;
+use \lyquidity\Asn1\Tag;
 use PKIX\Exception\Exception;
 
 const ERR_CONFIG_ERROR = 1;
@@ -114,7 +114,7 @@ abstract class Store
 
 		$responseBytes = (new Encoder())->encodeElement( $responseData );
 		$responseSig = "";
-		$signResult = openssl_sign( $responseBytes, $responseSig, $privateKey, \Ocsp\Ocsp::OID2Name[ \Ocsp\Ocsp::sha256WithRSAEncryption ] );
+		$signResult = openssl_sign( $responseBytes, $responseSig, $privateKey, \lyquidity\OCSP\Ocsp::OID2Name[ \lyquidity\OCSP\Ocsp::sha256WithRSAEncryption ] );
 		if( ! $signResult )
 			return false;
 
@@ -122,14 +122,14 @@ abstract class Store
 		// file_put_contents('c:/responder.txt',
 		// 	chunk_split( base64_encode( $responseBytes ) ) . "\n\n" .
 		// 	chunk_split( base64_encode( $responseSig ) ) . "\n\n" . 
-		// 	\Ocsp\Asn1\OID2Name[ \Ocsp\Ocsp::sha256WithRSAEncryption ]
+		// 	\Ocsp\Asn1\OID2Name[ \lyquidity\OCSP\Ocsp::sha256WithRSAEncryption ]
 		// );
 
 		$basicOCSPResponse = Sequence::create( [
 			$responseData,
 			// AlgorithmIdentifier - the algorithm use to create the signature see Section 4.1.1.2 of RFC 5280
 			Sequence::create( [
-				ObjectIdentifier::create( \Ocsp\Ocsp::sha256WithRSAEncryption ),
+				ObjectIdentifier::create( \lyquidity\OCSP\Ocsp::sha256WithRSAEncryption ),
 				NullElement::create() // These are any parameters in this case none
 			] ),
 			// The signature
@@ -141,12 +141,12 @@ abstract class Store
 		] );
 
 		$ResponseBytes = Sequence::create( [
-			ObjectIdentifier::create( \Ocsp\Ocsp::id_pkix_ocsp_basic ),
+			ObjectIdentifier::create( \lyquidity\OCSP\Ocsp::id_pkix_ocsp_basic ),
 			OctetString::create( (new Encoder())->encodeElement( $basicOCSPResponse ) )
 		] );
 
 		$ocspResponse = Sequence::create( [
-			Enumerated::create( \Ocsp\Ocsp::ERR_SUCCESS ),
+			Enumerated::create( \lyquidity\OCSP\Ocsp::ERR_SUCCESS ),
 			$ResponseBytes->setTag( Tag::explicit( 0 ) )
 		] );
 

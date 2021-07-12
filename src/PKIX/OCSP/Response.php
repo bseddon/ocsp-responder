@@ -5,12 +5,12 @@
  */
 namespace PKIX\OCSP;
 
-use Ocsp\Asn1\Element;
-use Ocsp\Asn1\Tag;
-use Ocsp\Asn1\UniversalTagID;
+use \lyquidity\Asn1\Element;
+use \lyquidity\Asn1\Tag;
+use \lyquidity\Asn1\UniversalTagID;
 use PKIX\Exception\ResponseException;
 
-use function Ocsp\Asn1\asSequence;
+use function \lyquidity\Asn1\asSequence;
 
 /**
  * %OCSP response message.
@@ -20,7 +20,7 @@ class Response extends \PKIX\Message
 	const mimeType = 'application/ocsp-response';
 
 	/** @var string[] */
-	protected $knownResponses = array( \Ocsp\Ocsp::id_pkix_ocsp_basic => '\PKIX\OCSP\BasicResponse');
+	protected $knownResponses = array( \lyquidity\OCSP\Ocsp::id_pkix_ocsp_basic => '\PKIX\OCSP\BasicResponse');
 	/** @var BasicResponse */
 	protected $response;
 	/** @var int */
@@ -37,29 +37,29 @@ class Response extends \PKIX\Message
 		try
 		{
 			/** @var Sequence */
-			$this->_tlv = ( new \Ocsp\Asn1\Der\Decoder() )->decodeElement( $data );
+			$this->_tlv = ( new \lyquidity\Asn1\Der\Decoder() )->decodeElement( $data );
 
-			$enumerated = \Ocsp\Asn1\asEnumerated( $this->_tlv->getFirstChildOfType( UniversalTagID::ENUMERATED ) );
+			$enumerated = \lyquidity\Asn1\asEnumerated( $this->_tlv->getFirstChildOfType( UniversalTagID::ENUMERATED ) );
 			$success = $enumerated ? $enumerated->getValue() === 0 : false;
 		
 			$responseBytes = asSequence( $this->_tlv->getFirstChildOfType(0, Element::CLASS_CONTEXTSPECIFIC, Tag::ENVIRONMENT_EXPLICIT ) );
-			$responseType = $responseBytes ? \Ocsp\Asn1\asObjectIdentifier( $responseBytes->getFirstChildOfType( UniversalTagID::OBJECT_IDENTIFIER ) ) : null;
+			$responseType = $responseBytes ? \lyquidity\Asn1\asObjectIdentifier( $responseBytes->getFirstChildOfType( UniversalTagID::OBJECT_IDENTIFIER ) ) : null;
 
 			$oid = $responseType ? $responseType->getIdentifier() : null;
 
 			if ( $respClass = $this->knownResponses[ $oid ] ?? null )
 			{
-				$response = \Ocsp\Asn1\asOctetString( $responseBytes->getFirstChildOfType( UniversalTagID::OCTET_STRING ) );
+				$response = \lyquidity\Asn1\asOctetString( $responseBytes->getFirstChildOfType( UniversalTagID::OCTET_STRING ) );
 			 	$this->response = new $respClass( $response->getValue() );
 			}
 		}
-		catch (\Ocsp\Exception\Asn1DecodingException $e) 
+		catch (\lyquidity\Asn1\Exception\Asn1DecodingException $e) 
 		{
-			throw new ResponseException ("Malformed request", \Ocsp\OCsp::ERR_MALFORMED_ASN1);
+			throw new ResponseException ("Malformed request", \lyquidity\OCSP\OCsp::ERR_MALFORMED_ASN1);
 		} 
-		catch (\Ocsp\Exception\InvalidAsn1Value $e)
+		catch (\lyquidity\Asn1\Exception\InvalidAsn1Value $e)
 		{
-			throw new ResponseException ("Malformed request", \Ocsp\Ocsp::ERR_MALFORMED_ASN1);
+			throw new ResponseException ("Malformed request", \lyquidity\OCSP\Ocsp::ERR_MALFORMED_ASN1);
 		}
 	}
 

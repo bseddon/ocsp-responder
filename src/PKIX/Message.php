@@ -6,9 +6,9 @@
 
 namespace PKIX;
 
-use Ocsp\Asn1\Element\Sequence;
-use PKIX\Exception\HTTPException;
-use PKIX\Exception\UnimplementedException;
+use \lyquidity\Asn1\Element\Sequence;
+use \PKIX\Exception\HTTPException;
+use \PKIX\Exception\UnimplementedException;
 
 /**
  * Abstract class for manipulating PKIX ASN1 Messages.
@@ -100,7 +100,7 @@ abstract class Message
 	public function verifySignature( $signer = null )
 	{
 		$signedData = $this->getSignedData();
-		$signers = \Ocsp\Ocsp::verifySigning( $this->_tlv, $signer, $signedData );
+		$signers = \lyquidity\OCSP\Ocsp::verifySigning( $this->_tlv, $signer, $signedData );
 	}
 
 	/**

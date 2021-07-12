@@ -10,7 +10,7 @@ namespace PKIX\OCSP;
  */
 class ExceptionResponse extends Response
 {
-	protected $OCSPStatus = \Ocsp\Ocsp::ERR_SUCCESS;
+	protected $OCSPStatus = \lyquidity\OCSP\Ocsp::ERR_SUCCESS;
 	protected $HTTPStatus = self::HTTP_OK;
 
 	/**
@@ -53,15 +53,15 @@ class ExceptionResponse extends Response
 	{
 		switch ($errcode)
 		{
-			case \Ocsp\Ocsp::ERR_MALFORMED_ASN1:
+			case \lyquidity\OCSP\Ocsp::ERR_MALFORMED_ASN1:
 				return new MalformedRequestResponse();
-			case \Ocsp\Ocsp::ERR_INTERNAL_ERROR:
+			case \lyquidity\OCSP\Ocsp::ERR_INTERNAL_ERROR:
 				return new InternalErrorResponse();
-			case \Ocsp\Ocsp::ERR_TRY_LATER:
+			case \lyquidity\OCSP\Ocsp::ERR_TRY_LATER:
 				return new TryLaterResponse();
-			case \Ocsp\Ocsp::ERR_SIG_REQUIRED:
+			case \lyquidity\OCSP\Ocsp::ERR_SIG_REQUIRED:
 				return new SigRequiredResponse();
-			case \Ocsp\Ocsp::ERR_UNAUTHORIZED:
+			case \lyquidity\OCSP\Ocsp::ERR_UNAUTHORIZED:
 				return new UnauthorizedResponse();
 
 			default:
@@ -75,9 +75,9 @@ class ExceptionResponse extends Response
     public function getData()
 	{
 		// This response should be the same as pack("C*", 0x30, 0x03, 0x0a, 0x01, $this->OCSPStatus);
-		return( new \Ocsp\Asn1\Der\Encoder() )->encodeElement( 
-			\Ocsp\Asn1\Element\Sequence::create([
-				\Ocsp\Asn1\Element\Enumerated::create( $this->OCSPStatus )
+		return( new \lyquidity\Asn1\Der\Encoder() )->encodeElement( 
+			\lyquidity\Asn1\Element\Sequence::create([
+				\lyquidity\Asn1\Element\Enumerated::create( $this->OCSPStatus )
 			])
 		);
 	}

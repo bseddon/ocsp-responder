@@ -1,6 +1,6 @@
 <?php
 
-function ocsp_responder_autoload( $classname )
+function responder_autoload( $classname )
 {
 	$prefix = 'PKIX\\';
 	if ( strpos( $classname, $prefix ) !== 0 ) return false;
@@ -9,4 +9,4 @@ function ocsp_responder_autoload( $classname )
 	require_once  __DIR__ . "/$filename";
 }
 
-spl_autoload_register( 'ocsp_responder_autoload' );
+spl_autoload_register( 'responder_autoload' );

@@ -9,30 +9,26 @@
 namespace PKIX;
 
 use DateTimeImmutable;
-use DateTimeZone;
-use Ocsp\Asn1\Der\Decoder;
-use Ocsp\Asn1\Der\Encoder;
-use Ocsp\Asn1\Element;
-use Ocsp\Asn1\Element\BitString;
-use Ocsp\Asn1\Element\Enumerated;
-use Ocsp\Asn1\Element\GeneralizedTime;
-use Ocsp\Asn1\Element\Integer;
-use Ocsp\Asn1\Element\NullElement;
-use Ocsp\Asn1\Element\ObjectIdentifier;
-use Ocsp\Asn1\Element\OctetString;
-use Ocsp\Asn1\Element\RawPrimitive;
-use Ocsp\Asn1\Element\Sequence;
-use Ocsp\Asn1\Element\UTCTime;
-use Ocsp\Asn1\Element\UTF8String;
-use Ocsp\Asn1\Tag;
-use Ocsp\Asn1\UniversalTagID;
-use Ocsp\CertificateInfo;
-use Ocsp\CertificateLoader;
+use \lyquidity\Asn1\Der\Decoder;
+use \lyquidity\Asn1\Der\Encoder;
+use \lyquidity\Asn1\Element;
+use \lyquidity\Asn1\Element\BitString;
+use \lyquidity\Asn1\Element\Enumerated;
+use \lyquidity\Asn1\Element\GeneralizedTime;
+use \lyquidity\Asn1\Element\Integer;
+use \lyquidity\Asn1\Element\NullElement;
+use \lyquidity\Asn1\Element\ObjectIdentifier;
+use \lyquidity\Asn1\Element\OctetString;
+use \lyquidity\Asn1\Element\Sequence;
+use \lyquidity\Asn1\Element\UTCTime;
+use \lyquidity\Asn1\Tag;
+use \lyquidity\Asn1\UniversalTagID;
+use \lyquidity\Ocsp\CertificateInfo;
+use \lyquidity\Ocsp\CertificateLoader;
 
-use function Ocsp\Asn1\asBitString;
-use function Ocsp\Asn1\asInteger;
-use function Ocsp\Asn1\asOctetString;
-use function Ocsp\Asn1\asSequence;
+use function \lyquidity\Asn1\asInteger;
+use function \lyquidity\Asn1\asOctetString;
+use function \lyquidity\Asn1\asSequence;
 
 /**
  * X.509 CRL
@@ -143,7 +139,7 @@ class CRL
 	 * Return the value for an OID
 	 *
 	 * @param string $ext_oid
-	 * @param \Ocsp\Asn1\Element\Sequence $extensions
+	 * @param \lyquidity\Asn1\Element\Sequence $extensions
 	 * @return string
 	 */
 	private static function findExtensionValue( $ext_oid, $extensions ) 
@@ -155,21 +151,21 @@ class CRL
 		else
 		{
 			$ext_name = $ext_oid;
-			$ext_oid = \Ocsp\OID::getOIDFromName($ext_name);
+			$ext_oid = \lyquidity\OID\OID::getOIDFromName($ext_name);
 			$is_oid = ! is_null( $ext_oid );
 		}
 
 		foreach( $extensions->getElements() as $k => $seq ) 
 		{
 			if ( ! $seq->isConstructed() ) continue;
-			/** @var \Ocsp\Asn1\Element\Sequence $seq */
-			$oid = \Ocsp\Asn1\asObjectIdentifier( $seq->at(1) );
+			/** @var \lyquidity\Asn1\Element\Sequence $seq */
+			$oid = \lyquidity\Asn1\asObjectIdentifier( $seq->at(1) );
 			if ( ! $oid ) continue;
 			$EXT_OID = $oid->getIdentifier();
-			if( $is_oid ? ( $EXT_OID == $ext_oid ) : ( \Ocsp\OID::getNameFromOID( $EXT_OID ) == $ext_name ) )
+			if( $is_oid ? ( $EXT_OID == $ext_oid ) : ( \lyquidity\OID\OID::getNameFromOID( $EXT_OID ) == $ext_name ) )
 			{
-				$hasCritical = $seq->at(1) instanceof \Ocsp\Asn1\Element\Boolean;
-				$extValue = \Ocsp\Asn1\asOctetString( $seq->at( $hasCritical ? 3 : 2 ) );
+				$hasCritical = $seq->at(1) instanceof \lyquidity\Asn1\Element\Boolean;
+				$extValue = \lyquidity\Asn1\asOctetString( $seq->at( $hasCritical ? 3 : 2 ) );
 				return $extValue ? $extValue->getValue() : null;
 			}
 		}
@@ -187,12 +183,12 @@ class CRL
 		$ret = new Sequence();
 
 		$is_v1 = false;
-		if ( \Ocsp\Asn1\asSequence( $cert_root->first()->asSequence()->getFirstChildOfType( 0, Element::CLASS_CONTEXTSPECIFIC, Tag::ENVIRONMENT_EXPLICIT ) ) )
+		if ( asSequence( $cert_root->first()->asSequence()->getFirstChildOfType( 0, Element::CLASS_CONTEXTSPECIFIC, Tag::ENVIRONMENT_EXPLICIT ) ) )
 			$is_v1 = true;
 
 		// Define subjKeyId
 		$subjKeyId = null;
-		$extensions = \Ocsp\Asn1\asSequence( $cert_root->first()->asSequence()->getFirstChildOfType( 3, Element::CLASS_CONTEXTSPECIFIC, Tag::ENVIRONMENT_EXPLICIT ) );
+		$extensions = asSequence( $cert_root->first()->asSequence()->getFirstChildOfType( 3, Element::CLASS_CONTEXTSPECIFIC, Tag::ENVIRONMENT_EXPLICIT ) );
 
 		if( $extensions )
 		{
@@ -211,7 +207,7 @@ class CRL
 
 		if ( $subjKeyId === null )
 		{
-			$certInfo = new \Ocsp\CertificateInfo();
+			$certInfo = new \lyquidity\OCSP\CertificateInfo();
 			$subjPubKey = $certInfo->extractSubjectPublicKeyBytes( $cert_root );
 	
 			if ( $subjPubKey )
@@ -226,7 +222,7 @@ class CRL
 		);
 
 		// Copy subject
-		$subject = asSequence( $cert_root->first()->asSequence()->getNthChildOfType( $is_v1 ? 3 : 4, \Ocsp\Asn1\UniversalTagID::SEQUENCE ) );
+		$subject = asSequence( $cert_root->first()->asSequence()->getNthChildOfType( $is_v1 ? 3 : 4, \lyquidity\Asn1\UniversalTagID::SEQUENCE ) );
 
 		// Copy serial
 		$serial = asInteger( $cert_root->first()->asSequence()->at( $is_v1 ? 1 : 2 ) )->getValue();
@@ -298,7 +294,7 @@ class CRL
 
 		$crl_hash_alg = ( isset( $ci['alg'] ) ? $ci['alg'] : OPENSSL_ALGO_SHA1 );		
 
-		$sign_alg_oid = \Ocsp\OID::getAlgoOID($ca_pkey_type, $crl_hash_alg);
+		$sign_alg_oid = \lyquidity\OID\OID::getAlgoOID($ca_pkey_type, $crl_hash_alg);
 
 		if ( $sign_alg_oid === false )
 			return false;
@@ -354,7 +350,7 @@ class CRL
 					$revCert->addElement( $crlExts );
 
 					$reasonCode = Sequence::create([
-						ObjectIdentifier::create( \Ocsp\OID::getOIDFromName("cRLReason") ),
+						ObjectIdentifier::create( \lyquidity\OID\OID::getOIDFromName("cRLReason") ),
 						OctetString::create( (new Encoder())->encodeElement( Enumerated::create( $revokedCert['reason'] ) ) )
 					] );
 
@@ -364,7 +360,7 @@ class CRL
 					{
 						// $crlExts->content['invalidityDate'] = new ASN1_SEQUENCE;
 						$invalidityDate = Sequence::create( [
-							ObjectIdentifier::create( \Ocsp\OID::getOIDFromName("invalidityDate") ),
+							ObjectIdentifier::create( \lyquidity\OID\OID::getOIDFromName("invalidityDate") ),
 							OctetString::create( 
 								(new Encoder())->encodeElement(
 									GeneralizedTime::create( (new \DateTimeImmutable())->setTimestamp( $revokedCert['compr_date'] ) )
@@ -378,10 +374,10 @@ class CRL
 					{
 						// $crlExts->content['holdInstructionCode'] = new ASN1_SEQUENCE;
 						$holdInstructionCode = Sequence::create( [
-							ObjectIdentifier::create( \Ocsp\OID::getOIDFromName("instructionCode") ),
+							ObjectIdentifier::create( \lyquidity\OID\OID::getOIDFromName("instructionCode") ),
 							OctetString::create(
 								(new Encoder())->encodeElement(
-									ObjectIdentifier::create( \Ocsp\OID::getOIDFromName( self::getHoldInstructionNameByCode( $revokedCert['hold_instr'] ) ) )
+									ObjectIdentifier::create( \lyquidity\OID\OID::getOIDFromName( self::getHoldInstructionNameByCode( $revokedCert['hold_instr'] ) ) )
 								)
 							)
 						] );
@@ -402,7 +398,7 @@ class CRL
 			$subjectKeyIdentifier = self::getExtVal_SubjectKeyIdentifier( $ca_decoded );
 
 			$authorityKeyIdentifier = Sequence::create([
-				ObjectIdentifier::create( \Ocsp\OID::getOIDFromName("authorityKeyIdentifier") ),
+				ObjectIdentifier::create( \lyquidity\OID\OID::getOIDFromName("authorityKeyIdentifier") ),
 				OctetString::create( (new Encoder())->encodeElement( $subjectKeyIdentifier ) ),
 			]);
 			$crlExts->addElement( $authorityKeyIdentifier );
@@ -412,7 +408,7 @@ class CRL
 			if ( isset( $ci['no'] ) && is_numeric( $ci['no'] ) )
 			{
 				$cRLNumber = Sequence::create( [
-					ObjectIdentifier::create( \Ocsp\OID::getOIDFromName("cRLNumber") ),
+					ObjectIdentifier::create( \lyquidity\OID\OID::getOIDFromName("cRLNumber") ),
 					OctetString::create( (new Encoder())->encodeElement( Integer::create( $ci['no'] ) ) )
 				] );
 				$crlExts->addElement( $cRLNumber );
