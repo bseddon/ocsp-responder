@@ -22,7 +22,7 @@
 	},
     "require": {
         "php": ">=5.5.9",
-        "ocsp/request": "*"
+        "lyquidity/requester": "*"
     },
     "keywords": [
         "ocsp",
