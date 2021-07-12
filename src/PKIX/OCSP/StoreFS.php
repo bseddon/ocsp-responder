@@ -191,4 +191,15 @@ class StoreFS extends Store
 				)
 			);
 	}
+
+		/**
+	 * Create a CRL for the CA
+	 * @return string
+	 */
+	public function createCRL()
+	{
+		// TODO
+		return null;
+	}
+
 }

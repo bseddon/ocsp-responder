@@ -296,7 +296,7 @@ class StoreCA extends Store
 		return $this->createResponse( $cid, $status, $publicKeyBytes, $privateKey, $caSequence, $revokedInfo );
 	}
 
-		/**
+	/**
 	 * Create a CRL for the CA
 	 * @return string
 	 */

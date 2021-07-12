@@ -155,7 +155,7 @@ class CRL
 		else
 		{
 			$ext_name = $ext_oid;
-			$ext_oid = \PKIX\OID::getOIDFromName($ext_name);
+			$ext_oid = \Ocsp\OID::getOIDFromName($ext_name);
 			$is_oid = ! is_null( $ext_oid );
 		}
 
@@ -166,7 +166,7 @@ class CRL
 			$oid = \Ocsp\Asn1\asObjectIdentifier( $seq->at(1) );
 			if ( ! $oid ) continue;
 			$EXT_OID = $oid->getIdentifier();
-			if( $is_oid ? ( $EXT_OID == $ext_oid ) : ( \PKIX\OID::getNameFromOID( $EXT_OID ) == $ext_name ) )
+			if( $is_oid ? ( $EXT_OID == $ext_oid ) : ( \Ocsp\OID::getNameFromOID( $EXT_OID ) == $ext_name ) )
 			{
 				$hasCritical = $seq->at(1) instanceof \Ocsp\Asn1\Element\Boolean;
 				$extValue = \Ocsp\Asn1\asOctetString( $seq->at( $hasCritical ? 3 : 2 ) );
@@ -298,7 +298,7 @@ class CRL
 
 		$crl_hash_alg = ( isset( $ci['alg'] ) ? $ci['alg'] : OPENSSL_ALGO_SHA1 );		
 
-		$sign_alg_oid = OID::getAlgoOID($ca_pkey_type, $crl_hash_alg);
+		$sign_alg_oid = \Ocsp\OID::getAlgoOID($ca_pkey_type, $crl_hash_alg);
 
 		if ( $sign_alg_oid === false )
 			return false;
@@ -354,7 +354,7 @@ class CRL
 					$revCert->addElement( $crlExts );
 
 					$reasonCode = Sequence::create([
-						ObjectIdentifier::create( OID::getOIDFromName("cRLReason") ),
+						ObjectIdentifier::create( \Ocsp\OID::getOIDFromName("cRLReason") ),
 						OctetString::create( (new Encoder())->encodeElement( Enumerated::create( $revokedCert['reason'] ) ) )
 					] );
 
@@ -364,7 +364,7 @@ class CRL
 					{
 						// $crlExts->content['invalidityDate'] = new ASN1_SEQUENCE;
 						$invalidityDate = Sequence::create( [
-							ObjectIdentifier::create( OID::getOIDFromName("invalidityDate") ),
+							ObjectIdentifier::create( \Ocsp\OID::getOIDFromName("invalidityDate") ),
 							OctetString::create( 
 								(new Encoder())->encodeElement(
 									GeneralizedTime::create( (new \DateTimeImmutable())->setTimestamp( $revokedCert['compr_date'] ) )
@@ -378,10 +378,10 @@ class CRL
 					{
 						// $crlExts->content['holdInstructionCode'] = new ASN1_SEQUENCE;
 						$holdInstructionCode = Sequence::create( [
-							ObjectIdentifier::create( OID::getOIDFromName("instructionCode") ),
+							ObjectIdentifier::create( \Ocsp\OID::getOIDFromName("instructionCode") ),
 							OctetString::create(
 								(new Encoder())->encodeElement(
-									ObjectIdentifier::create( OID::getOIDFromName( self::getHoldInstructionNameByCode( $revokedCert['hold_instr'] ) ) )
+									ObjectIdentifier::create( \Ocsp\OID::getOIDFromName( self::getHoldInstructionNameByCode( $revokedCert['hold_instr'] ) ) )
 								)
 							)
 						] );
@@ -402,7 +402,7 @@ class CRL
 			$subjectKeyIdentifier = self::getExtVal_SubjectKeyIdentifier( $ca_decoded );
 
 			$authorityKeyIdentifier = Sequence::create([
-				ObjectIdentifier::create( OID::getOIDFromName("authorityKeyIdentifier") ),
+				ObjectIdentifier::create( \Ocsp\OID::getOIDFromName("authorityKeyIdentifier") ),
 				OctetString::create( (new Encoder())->encodeElement( $subjectKeyIdentifier ) ),
 			]);
 			$crlExts->addElement( $authorityKeyIdentifier );
@@ -412,7 +412,7 @@ class CRL
 			if ( isset( $ci['no'] ) && is_numeric( $ci['no'] ) )
 			{
 				$cRLNumber = Sequence::create( [
-					ObjectIdentifier::create( OID::getOIDFromName("cRLNumber") ),
+					ObjectIdentifier::create( \Ocsp\OID::getOIDFromName("cRLNumber") ),
 					OctetString::create( (new Encoder())->encodeElement( Integer::create( $ci['no'] ) ) )
 				] );
 				$crlExts->addElement( $cRLNumber );
