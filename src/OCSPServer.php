@@ -12,7 +12,9 @@ if ( ! class_exists('\\PKIX\\OCSP\\Request') ) // Will not be loaded if Composer
 try 
 {
 	// Set constant variables
-	$caConfigFile = __DIR__. '/../../certification2/ca.conf';
+	// $caConfigFile = dirname( get_included_files()[0] ) . '/certification/ca.conf';
+	$caConfigFile = dirname( end(debug_backtrace())['file'] ) . '/certification/ca.conf';
+
 	$caFolder = StoreCA::getCAFolder( $caConfigFile );
 	$caKey = $caFolder . '/ca.key';
 	$caCert = $caFolder . '/ca.crt';
