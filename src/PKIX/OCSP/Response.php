@@ -148,14 +148,13 @@ class Response extends \PKIX\Message
 	 * verified.
 	 *
 	 * @param string $signer The signer certificate.  If not set, all potential signer certificates from the message are tried.
-	 *
-	 * @return array The certificates for which the signature  verification has been successful.
+	 * @return string[] The certificates for which the signature  verification has been successful.
 	 *
 	 * @throws \PKIX\Exception\UnimplementedException on unsupported signature algorithm
 	 */
 	public function verifySignature( $signer = null )
 	{
-		$this->response->verifySignature( $signer );
+		return $this->response->verifySignature( $signer );
 	}
 
 	/**

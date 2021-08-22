@@ -140,7 +140,7 @@ class BasicResponse extends \PKIX\Message
 	 */
 	public function getSignedData()
 	{
-		// Don't think this is right but need and example
+		// Don't think this is right but need an example
         return ( new \lyquidity\Asn1\Der\Encoder() )->encodeElement( $this->_tlv->first() );
 	}
 
@@ -150,15 +150,14 @@ class BasicResponse extends \PKIX\Message
 	 * verified.
 	 *
 	 * @param string $signer The signer certificate.  If not set, all potential signer certificates from the message are tried.
-	 *
-	 * @return array The certificates for which the signature  verification has been successful.
-	 *
+	 * @return string[] The certificates for which the signature  verification has been successful.
 	 * @throws \PKIX\Exception\UnimplementedException on unsupported signature algorithm
 	 */
 	public function verifySignature( $signer = null )
 	{
-		$signedData = $this->getSignedData();
+		// $signedData = $this->getSignedData();
 		$signers = \lyquidity\OCSP\Ocsp::verifySigning( $this->_tlv, $signer, $signer );
+		return $signers;
 	}
 	/*@} end of Signature Verification (Local implementation) */
 }
