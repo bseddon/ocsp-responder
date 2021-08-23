@@ -36,6 +36,7 @@ use \lyquidity\Asn1\Element\UTCTime;
 use \lyquidity\Asn1\Tag;
 use \PKIX\CRL;
 use \PKIX\Exception\Exception;
+use PKIX\Exception\StoreException;
 
 use const Ocsp\ERR_UNAUTHORIZED;
 
@@ -155,7 +156,7 @@ class StoreFS extends Store
 		switch( $certInfo['status'] )
 		{
 			case 'E': // expired
-				throw new \Exception( "Certificate revoked", \lyquidity\OCSP\Ocsp::ERR_UNAUTHORIZED );
+				throw new StoreException( "Certificate revoked", \lyquidity\OCSP\Ocsp::ERR_UNAUTHORIZED );
 			case 'R': // revoked
 				$status = 1;
 				list( $date, $reason ) = explode( ',', $certInfo['revokedDate'] );

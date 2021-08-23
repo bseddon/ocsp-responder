@@ -8,6 +8,7 @@ namespace PKIX;
 
 use \lyquidity\Asn1\Element\Sequence;
 use \PKIX\Exception\HTTPException;
+use PKIX\Exception\RequestException;
 use \PKIX\Exception\UnimplementedException;
 
 /**
@@ -141,7 +142,7 @@ abstract class Message
 	 *
 	 * @return string The received message (unencoded)
 	 *
-	 * @throws \PKIX\Exception\HTTPException, \Exception
+	 * @throws \PKIX\Exception\HTTPException
 	 */
     public static function receive(array $methods)
 	{
@@ -189,7 +190,7 @@ abstract class Message
 					break;
 
 				default:
-					throw new \Exception ('Unimplemented receive method: '
+					throw new RequestException('Unimplemented receive method: '
 						. $_SERVER['REQUEST_METHOD']);
 			}
 		}
@@ -261,7 +262,7 @@ abstract class Message
 	 * response.  The respone body is available at the 'body' key and
 	 * the response headers at the 'headers' key.
 	 *
-	 * @throws \Exception on bad parameter
+	 * @throws \HTTPException on bad parameter
 	 */
     public function send( $url, $method = 'POST'  )
 	{
@@ -275,7 +276,7 @@ abstract class Message
 		}
 		else
 		{
-			throw new \Exception (get_class()
+			throw new HTTPException(get_class()
 				. "::send: Bad Parameter $method");
 		}
 	}

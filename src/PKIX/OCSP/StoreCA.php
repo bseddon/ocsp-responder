@@ -17,6 +17,7 @@ use \lyquidity\Asn1\Element\UTCTime;
 use \lyquidity\Asn1\Tag;
 use PKIX\CRL;
 use PKIX\Exception\Exception;
+use PKIX\Exception\StoreException;
 
 use const Ocsp\ERR_UNAUTHORIZED;
 
@@ -48,7 +49,7 @@ class StoreCA extends Store
 		$fp = fopen( $certificateDatabase, 'r' );
 		if ( $fp === false )
 		{
-			throw new \Exception("Unable to access the certificate database file: $certificateDatabase");
+			throw new StoreException("Unable to access the certificate database file: $certificateDatabase");
 		}
 
 		$keysCount = count( $keys );
@@ -64,7 +65,7 @@ class StoreCA extends Store
 				$data = str_getcsv( $line, "\t" );
 				if ( count( $data ) != $keysCount )
 				{
-					throw new \Exception("A database row does not have the required fields: " . join( ',', $data ) );
+					throw new StoreException("A database row does not have the required fields: " . join( ',', $data ) );
 				}
 	
 				$result[ $data[ $keys['serialNumber'] ] ] = array_reduce( array_keys( $keys ), function( $carry, $key ) use( $data, $keys ) { $carry[ $key ] = $data[ $keys[ $key ] ]; return $carry; }, [] );
@@ -91,7 +92,7 @@ class StoreCA extends Store
 
 		if ( ! $dir || ! $dir = realpath( "$base/$dir" ) )
 		{
-			throw new \Exception('The folder does not exist: '  . $dir );
+			throw new StoreException('The folder does not exist: '  . $dir );
 		}
 
 		return $dir;
