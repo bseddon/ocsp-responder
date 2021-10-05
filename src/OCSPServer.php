@@ -24,8 +24,10 @@ try
 	$caCertificate = file_get_contents( $caCert ); // PEM
 	$caSequence = $certificateLoader->fromString( $caCertificate );
 	$certificateInfo = new lyquidity\OCSP\CertificateInfo();
+	// This requestInfo is NOT the information from the caller. Information from the caller has not been retrieved yet.
+	// It is used to build a list of valid issuer certificates.
 	$requestInfo = $certificateInfo->extractRequestInfo( $caSequence, $caSequence );
-	$certificates[ base64_encode( sha1( $requestInfo->getIssuerPublicKeyBytes(), true) ) ] = array( $requestInfo, file_get_contents( $caKey ), $caSequence  );
+	$issuerCertificates[ base64_encode( sha1( $requestInfo->getIssuerPublicKeyBytes(), true) ) ] = array( $requestInfo, file_get_contents( $caKey ), $caSequence  );
 
 	// Load the request
 	$reqData = \PKIX\OCSP\Request::receive(array('GET', 'POST'));
@@ -36,7 +38,7 @@ try
 	$store = new \PKIX\OCSP\StoreCA( array( 'configFile' => $caConfigFile ) );
 
 	// Create the response DER stream
-	$respData = $store->getResp( $certID, $certificates );
+	$respData = $store->getResp( $certID, $issuerCertificates );
 
 	// Create an object so the final OCSP response can be returned with the appropriate headers
 	$resp = new \PKIX\OCSP\Response($respData);
