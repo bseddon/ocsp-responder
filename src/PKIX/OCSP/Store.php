@@ -14,7 +14,6 @@ use \lyquidity\Asn1\Element\RawConstructed;
 use \lyquidity\Asn1\Element\RawPrimitive;
 use \lyquidity\Asn1\Element\Sequence;
 use \lyquidity\Asn1\Tag;
-use PKIX\Exception\Exception;
 
 const ERR_CONFIG_ERROR = 1;
 const ERR_NOT_FOUND = 2;
