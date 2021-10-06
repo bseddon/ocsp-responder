@@ -19,7 +19,23 @@ use PKIX\CRL;
 use PKIX\Exception\Exception;
 use PKIX\Exception\StoreException;
 
-use const Ocsp\ERR_UNAUTHORIZED;
+// Reason codes
+define( 'KeyCompromise', 'KeyCompromise' ); // A computer is stolen or a smart card is lost
+define( 'CACompromise', 'CACompromise' ); // A CA certificate is compromised
+define( 'AffiliationChanged', 'AffiliationChanged' ); // An employee is terminated or suspended
+define( 'Superseded', 'Superseded' ); // If a smart card fails or the legal name of a user has changed
+define( 'CessationOfOperation', 'CessationOfOperation' ); // An issued certificate is replaced
+define( 'CertificateHold', 'CertificateHold' ); // A certificate needs to be put on hold temporarily
+define( 'RemoveFromCRL', 'RemoveFromCRL' ); // A CA is removed from the network
+define( 'Unspecified', 'Unspecified' ); // You revoke a certificate without providing a reason
+
+// Fields
+define( 'STATUS', 'status' );
+define( 'EXPIRYDATE', 'expiryDate' );
+define( 'REVOKEDDATE', 'revokedDate' );
+define( 'SERIALNUMBER', 'serialNumber' );
+define( 'FILENAME', 'filename' );
+define( 'DISTINGUISHEDNAME', 'distinguishedName' );
 
 /**
  * File system-based implementation of %OCSP responses storage.
@@ -30,18 +46,19 @@ class StoreCA extends Store
 	 * Names of columns in an OpenSSL CA database file
 	 */
 	public const keys = array(
-		'status' => 0,
-		'expiryDate' => 1,
-		'revokedDate' => 2,
-		'serialNumber' => 3,
-		'filename' => 4,
-		'distinguishedName' => 5
+		STATUS => 0,
+		EXPIRYDATE => 1,
+		REVOKEDDATE => 2,
+		SERIALNUMBER => 3,
+		FILENAME => 4,
+		DISTINGUISHEDNAME => 5
 	);
 
 	/**
 	 * Create an indexed array of a CA database created by OpenSSL
 	 *
 	 * @param string[] $keys
+	 * @param string $certificateDatabase
 	 * @return string[]
 	 */
 	public static function getIndexIssuedCertificatesInfo( $keys, $certificateDatabase )
@@ -80,6 +97,116 @@ class StoreCA extends Store
 		finally
 		{
 			fclose( $fp );
+		}
+	}
+
+	/**
+	 * Add the certificate to the CA database.  The database file will be created 
+	 *
+	 * @param string $certificatePEM
+	 * @param string $certificateDatabase
+	 * @return void
+	 * @throws \Exception
+	 */
+	public static function recordCertificate( $certificatePEM, $certificateDatabase )
+	{
+		/**
+		 	status flag (V=valid, R=revoked, E=expired).
+			expiration date in YYMMDDHHMMSSZ format.
+			revocation date in YYMMDDHHMMSSZ[,reason] format. Empty if not revoked.
+			serial number in hex.
+			filename or literal string ‘unknown’.
+			distinguished name.
+		 */
+
+		$databaseFile = "$certificateDatabase/database";
+		$database = "";
+		if ( file_exists( $databaseFile ) )
+		{
+			$database = file_get_contents( $databaseFile );
+		}
+
+		if ( $database && substr( $database, -1 ) != "\n" )
+		{
+			$database .= "\r\n";
+		}
+
+		$data = openssl_x509_parse( $certificatePEM );
+		if ( ! $data ) 
+		{
+			throw new \Exception( __("The certificate PEM cannot be parsed", 'ca') );
+		}
+
+		if ( strpos( $database, $data['serialNumberHex'] ) !== false )
+		{
+			throw new \Exception( __( "The certificate with serial '{$data['serialNumberHex']}' number has already been used", 'ca' ) );
+		}
+
+		$parts = array(
+			STATUS => "V",
+			EXPIRYDATE => $data['validTo'],
+			REVOKEDDATE => "",
+			SERIALNUMBER => $data['serialNumberHex'],
+			FILENAME => "unknown",
+			DISTINGUISHEDNAME => $data['name']
+		);
+
+		$database .= join( "\t", $parts );
+
+		file_put_contents( $databaseFile, $database );
+	}
+
+	/**
+	 * Revoke all and save the database
+	 *
+	 * @param string $certificateDatabase
+	 * @return void
+	 */
+	public static function revokeAllCertificates( $certificateDatabase, $reason = KeyCompromise )
+	{
+		$records = array_map( function( $record ) use( $reason )
+		{
+			$record[STATUS] = 'R';
+			$record[REVOKEDDATE] = date('ymdhis') . 'Z,' . $reason;
+			return $record;
+		},  StoreCA::getIndexIssuedCertificatesInfo( StoreCA::keys, $certificateDatabase ) );
+
+		self::saveRecords( $records, $certificateDatabase );
+	}
+
+	/**
+	 * Revoke a specific certificate identified by serial number and save the database
+	 * @param string $serialNumber
+	 * @param string $certificateDatabase
+	 * @return void
+	 */
+	public static function revokeCertificate( $serialNumber, $certificateDatabase, $reason = KeyCompromise )
+	{
+		$records = StoreCA::getIndexIssuedCertificatesInfo( StoreCA::keys, $certificateDatabase );
+		if ( ! isset( $records[ $serialNumber ] ) )
+			throw new \Exception( __('The serial number does not exist in the CA database', 'ca' ) );
+		$records[ $serialNumber ][STATUS] = 'R';
+		$records[ $serialNumber ][REVOKEDDATE] = date('ymdhis') . 'Z,' . $reason;
+
+		self::saveRecords( $records, $certificateDatabase );
+	}
+
+	/**
+	 * Revoke all and save the database
+	 * @param string[][] $records
+	 * @param string $certificateDatabase
+	 * @return void
+	 */
+	public static function saveRecords( $records, $certificateDatabase )
+	{
+		$database = join( "\r\n", array_map( function( $record ) 
+		{
+			return join("\t", $record );
+		}, $records ) );
+
+		if ( file_put_contents( $certificateDatabase, $database ) === false )
+		{
+			throw new \Exception( __("Unable to saved the changed CA database", 'ca' ) );
 		}
 	}
 
