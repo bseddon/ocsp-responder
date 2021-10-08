@@ -20,17 +20,18 @@ use PKIX\Exception\Exception;
 use PKIX\Exception\StoreException;
 
 // Reason codes
-define( 'KeyCompromise', 'KeyCompromise' ); // A computer is stolen or a smart card is lost
+define( 'KeyCompromise', 'keyCompromise' ); // A computer is stolen or a smart card is lost
 define( 'CACompromise', 'CACompromise' ); // A CA certificate is compromised
-define( 'AffiliationChanged', 'AffiliationChanged' ); // An employee is terminated or suspended
-define( 'Superseded', 'Superseded' ); // If a smart card fails or the legal name of a user has changed
-define( 'CessationOfOperation', 'CessationOfOperation' ); // An issued certificate is replaced
-define( 'CertificateHold', 'CertificateHold' ); // A certificate needs to be put on hold temporarily
-define( 'RemoveFromCRL', 'RemoveFromCRL' ); // A CA is removed from the network
-define( 'Unspecified', 'Unspecified' ); // You revoke a certificate without providing a reason
+define( 'AffiliationChanged', 'affiliationChanged' ); // An employee is terminated or suspended
+define( 'Superseded', 'superseded' ); // If a smart card fails or the legal name of a user has changed
+define( 'CessationOfOperation', 'cessationOfOperation' ); // An issued certificate is replaced
+define( 'CertificateHold', 'certificateHold' ); // A certificate needs to be put on hold temporarily
+define( 'RemoveFromCRL', 'removeFromCRL' ); // A CA is removed from the network
+define( 'Unspecified', 'unspecified' ); // You revoke a certificate without providing a reason
 
 // Fields
 define( 'STATUS', 'status' );
+define( 'CREATEDATE', 'createDate' );
 define( 'EXPIRYDATE', 'expiryDate' );
 define( 'REVOKEDDATE', 'revokedDate' );
 define( 'SERIALNUMBER', 'serialNumber' );
@@ -51,7 +52,8 @@ class StoreCA extends Store
 		REVOKEDDATE => 2,
 		SERIALNUMBER => 3,
 		FILENAME => 4,
-		DISTINGUISHEDNAME => 5
+		DISTINGUISHEDNAME => 5,
+		CREATEDATE => 6
 	);
 
 	/**
@@ -104,11 +106,11 @@ class StoreCA extends Store
 	 * Add the certificate to the CA database.  The database file will be created 
 	 *
 	 * @param string $certificatePEM
-	 * @param string $certificateDatabase
+	 * @param string $databaseFile
 	 * @return void
 	 * @throws \Exception
 	 */
-	public static function recordCertificate( $certificatePEM, $certificateDatabase )
+	public static function recordCertificate( $certificatePEM, $databaseFile )
 	{
 		/**
 		 	status flag (V=valid, R=revoked, E=expired).
@@ -119,7 +121,6 @@ class StoreCA extends Store
 			distinguished name.
 		 */
 
-		$databaseFile = "$certificateDatabase/database";
 		$database = "";
 		if ( file_exists( $databaseFile ) )
 		{
@@ -148,7 +149,8 @@ class StoreCA extends Store
 			REVOKEDDATE => "",
 			SERIALNUMBER => $data['serialNumberHex'],
 			FILENAME => "unknown",
-			DISTINGUISHEDNAME => $data['name']
+			DISTINGUISHEDNAME => $data['name'],
+			CREATEDATE => date('ymdHis') . 'Z'
 		);
 
 		$database .= join( "\t", $parts );
@@ -167,7 +169,7 @@ class StoreCA extends Store
 		$records = array_map( function( $record ) use( $reason )
 		{
 			$record[STATUS] = 'R';
-			$record[REVOKEDDATE] = date('ymdhis') . 'Z,' . $reason;
+			$record[REVOKEDDATE] = date('ymdHis') . 'Z,' . $reason;
 			return $record;
 		},  StoreCA::getIndexIssuedCertificatesInfo( StoreCA::keys, $certificateDatabase ) );
 
@@ -186,7 +188,7 @@ class StoreCA extends Store
 		if ( ! isset( $records[ $serialNumber ] ) )
 			throw new \Exception( __('The serial number does not exist in the CA database', 'ca' ) );
 		$records[ $serialNumber ][STATUS] = 'R';
-		$records[ $serialNumber ][REVOKEDDATE] = date('ymdhis') . 'Z,' . $reason;
+		$records[ $serialNumber ][REVOKEDDATE] = date('ymdHis') . 'Z,' . $reason;
 
 		self::saveRecords( $records, $certificateDatabase );
 	}
