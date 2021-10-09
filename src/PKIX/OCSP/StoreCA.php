@@ -194,6 +194,23 @@ class StoreCA extends Store
 	}
 
 	/**
+	 * Revoke a specific certificate identified by serial number and save the database
+	 * @param string $serialNumber
+	 * @param string $certificateDatabase
+	 * @return void
+	 */
+	public static function restoreCertificate( $serialNumber, $certificateDatabase )
+	{
+		$records = StoreCA::getIndexIssuedCertificatesInfo( StoreCA::keys, $certificateDatabase );
+		if ( ! isset( $records[ $serialNumber ] ) )
+			throw new \Exception( __('The serial number does not exist in the CA database', 'ca' ) );
+		$records[ $serialNumber ][STATUS] = 'V';
+		$records[ $serialNumber ][REVOKEDDATE] = '';
+
+		self::saveRecords( $records, $certificateDatabase );
+	}
+
+	/**
 	 * Revoke all and save the database
 	 * @param string[][] $records
 	 * @param string $certificateDatabase
