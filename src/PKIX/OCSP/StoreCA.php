@@ -37,6 +37,7 @@ define( 'REVOKEDDATE', 'revokedDate' );
 define( 'SERIALNUMBER', 'serialNumber' );
 define( 'FILENAME', 'filename' );
 define( 'DISTINGUISHEDNAME', 'distinguishedName' );
+define( 'AUTHOR', 'author' );
 
 /**
  * File system-based implementation of %OCSP responses storage.
@@ -53,7 +54,8 @@ class StoreCA extends Store
 		SERIALNUMBER => 3,
 		FILENAME => 4,
 		DISTINGUISHEDNAME => 5,
-		CREATEDATE => 6
+		CREATEDATE => 6,
+		AUTHOR => 7
 	);
 
 	/**
@@ -110,7 +112,7 @@ class StoreCA extends Store
 	 * @return void
 	 * @throws \Exception
 	 */
-	public static function recordCertificate( $certificatePEM, $databaseFile )
+	public static function recordCertificate( $certificatePEM, $databaseFile, $author )
 	{
 		/**
 		 	status flag (V=valid, R=revoked, E=expired).
@@ -150,7 +152,8 @@ class StoreCA extends Store
 			SERIALNUMBER => $data['serialNumberHex'],
 			FILENAME => "unknown",
 			DISTINGUISHEDNAME => $data['name'],
-			CREATEDATE => date('ymdHis') . 'Z'
+			CREATEDATE => date('ymdHis') . 'Z',
+			AUTHOR => $author
 		);
 
 		$database .= join( "\t", $parts );
