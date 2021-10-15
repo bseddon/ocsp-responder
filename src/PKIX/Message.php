@@ -105,7 +105,7 @@ abstract class Message
 	}
 
 	/**
-	 * Return serialized representation of the part of the message inteded to be signed.
+	 * Return serialized representation of the part of the message intended to be signed.
 	 *
 	 * @return string ASN.1 binary string suitable for signing/verifying the signature
 	 * @throws \PKIX\Exception\UnimplementedException when not implemented by the called class
