@@ -39,6 +39,13 @@ define( 'FILENAME', 'filename' );
 define( 'DISTINGUISHEDNAME', 'distinguishedName' );
 define( 'AUTHOR', 'author' );
 
+if ( ! function_exists("\__") )
+{
+	function __( $message, $domain )
+	{
+		return $message;
+	}
+}
 /**
  * File system-based implementation of %OCSP responses storage.
  */
