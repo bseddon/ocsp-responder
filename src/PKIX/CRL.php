@@ -247,19 +247,19 @@ class CRL
 	 * Generates and signs CRL from provided data
 	 * Returns in DER format
 	 *
-	 * @param array $ci data for CRL creation. <br>
-	 * Format: array(<br>
-	 *   'no' => number of CRL,<br>
-	 *   'version' => CRL format version, 1 or 2,<br>
-	 *   'days' => CRL validity in days from date of creation,<br>
-	 *   'alg' => OPENSSL_ALGO_*,<br>
-	 *   'revoked' => array( array( //list of revoked certificates<br>
-	 *     'serial' => S/N of revoked cert,<br>
-	 *     'rev_date' => date of revokation, timestamp,<br>
-	 *     'reason' => code of revokation reason, see self::getRevokeReasonCodeByName(),<br>
-	 *     'compr_date' => date when certifacate became compromised, timestamp,<br>
-	 *     'hold_instr' => code of hold instruction, see self::getHoldInstructionCodeByName(),<br>
-	 *   ), ... )<br>
+	 * @param array $ci data for CRL creation. 
+	 * Format: array(
+	 *   'no' => number of CRL,
+	 *   'version' => CRL format version, 1 or 2,
+	 *   'days' => CRL validity in days from date of creation,
+	 *   'alg' => OPENSSL_ALGO_*,
+	 *   'revoked' => array( array( //list of revoked certificates
+	 *     'serial' => S/N of revoked cert,
+	 *     'rev_date' => date of revokation, timestamp,
+	 *     'reason' => code of revokation reason, see self::getRevokeReasonCodeByName(),
+	 *     'compr_date' => date when certifacate became compromised, timestamp,
+	 *     'hold_instr' => code of hold instruction, see self::getHoldInstructionCodeByName(),
+	 *   ), ... )
 	 * )
 	 * @param string $ca_pkey key pair for CA root certificate, got from openssl_pkey_get_private()
 	 * @param string $ca_cert CA root certificate data in DER format
@@ -299,10 +299,10 @@ class CRL
 		if ( $sign_alg_oid === false )
 			return false;
 
-		//Create CRL stricture
+		//Create CRL structure
 		$tbsCertList = new Sequence();
 
-		if($crl_version == 2)
+		if( $crl_version == 2  )
 		{
 			$tbsCertList->addElement( Integer::create( $crl_version - 1 ) );
 		}
